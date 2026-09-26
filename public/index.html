@@ -370,13 +370,85 @@
   #loading.error .orb { animation: none; filter: grayscale(1); opacity: 0.45; }
   @keyframes spin { to { transform: rotate(1turn); } }
   @media (prefers-reduced-motion: reduce) { .orb { animation-duration: 8s; } }
+  /* 생활: 가방 · 짓기 버튼(점프 위), 할 일 버튼, 알림, 가방 · 짓기 판, 아래 막대 */
+  .tool-btn {
+    position: fixed; right: calc(env(safe-area-inset-right, 0px) + 41px);
+    width: 50px; height: 50px; padding: 0; border-radius: 50%;
+    display: grid; place-items: center;
+    border: 1px solid var(--glass-edge); background: var(--glass); color: var(--ink);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    transition: opacity 0.2s ease;
+  }
+  .bag-btn { bottom: calc(env(safe-area-inset-bottom, 0px) + 142px); }
+  .build-btn { bottom: calc(env(safe-area-inset-bottom, 0px) + 202px); }
+  .bag-count {
+    position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+    background: var(--scarf, #e8574b); color: #fff; font: 12px/20px var(--font-body); text-align: center;
+  }
+  .bag-count[hidden] { display: none; }
+  .controls.away .tool-btn { opacity: 0; pointer-events: none; }
+  body:has(#emote-menu:not([hidden])) .tool-btn, body:has(#dialog:not([hidden])) .tool-btn,
+  body:has(#build-bar:not([hidden])) .tool-btn, body:has(#camp-bar:not([hidden])) .tool-btn { opacity: 0; pointer-events: none; }
+  .ctx[disabled] { opacity: 0.8; }
+  .ctx.hot { background: #ffcf5a; color: #2a1c08; animation: ctx-pulse 0.5s ease-in-out infinite alternate; }
+  @keyframes ctx-pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.07); } }
+  @media (prefers-reduced-motion: reduce) { .ctx.hot { animation: none; } }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 246px); z-index: 6;
+    transform: translate(-50%, 8px); max-width: min(90vw, 420px); padding: 9px 16px; border-radius: 14px;
+    background: rgba(12, 16, 42, 0.88); border: 1px solid var(--glass-edge); color: var(--ink);
+    font-size: 14px; line-height: 1.4; text-align: center; word-break: keep-all;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .lifebar {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 176px); z-index: 4; transform: translateX(-50%);
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;
+    width: max-content; max-width: min(94vw, 520px); padding: 10px; border-radius: 18px;
+    background: rgba(12, 16, 42, 0.84); border: 1px solid var(--glass-edge);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+  .lifebar[hidden] { display: none; }
+  .bar-note { flex-basis: 100%; text-align: center; font-size: 14px; color: var(--ink); word-break: keep-all; }
+  .bar-btn {
+    min-height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--glass-edge);
+    background: rgba(255, 255, 255, 0.08); color: var(--ink); font: 15px var(--font-body);
+  }
+  .bar-btn.primary { background: var(--ink); color: var(--space); border-color: transparent; }
+  .bar-btn[disabled] { opacity: 0.4; }
+  .bar-btn[hidden] { display: none; }
+  .bar-btn[aria-pressed="true"] { background: #ffcf5a; color: #2a1c08; border-color: transparent; }
+  .remove-btn { width: 100%; margin-top: 8px; }
+  .build-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .build-opt {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 64px; padding: 10px 12px;
+    border-radius: 14px; border: 1px solid var(--glass-edge); background: rgba(255, 255, 255, 0.05); color: var(--ink); text-align: left;
+  }
+  .build-opt b { font: 18px var(--font-display); font-weight: normal; color: var(--c, var(--ink)); }
+  .build-opt small { font-size: 12px; line-height: 1.35; color: var(--ink-soft); word-break: keep-all; }
+  .build-opt[disabled] { opacity: 0.5; }
+  .bag-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 46vh; }
+  .bag-row { display: flex; align-items: center; gap: 8px; min-height: 46px; }
+  .bag-name { flex: 1; font-size: 15px; }
+  .bag-act {
+    min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--glass-edge);
+    background: rgba(255, 255, 255, 0.08); color: var(--ink); font: 14px var(--font-body);
+  }
+  /* 모닥불에 앉으면 움직일 수 없으니 조이스틱 · 점프 · 반응 버튼 대신 모닥불 막대를 아래에 */
+  #camp-bar { bottom: calc(env(safe-area-inset-bottom, 0px) + 34px); }
+  body:has(#camp-bar:not([hidden])) .controls .stick-home, body:has(#camp-bar:not([hidden])) .controls .jump,
+  body:has(#camp-bar:not([hidden])) .controls .emote-btn, body:has(#camp-bar:not([hidden])) .controls .emote-menu { opacity: 0; pointer-events: none; }
+  body:has(#build-bar:not([hidden])) .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 300px); }
+  body:has(#camp-bar:not([hidden])) .toast { top: calc(env(safe-area-inset-top, 0px) + 116px); bottom: auto; } /* 앉아 있으면 얼굴을 가리지 않게 하늘 쪽에 */
+  /* 짓기 · 모닥불 막대가 떠 있으면 할 일 · 주민 대화 버튼은 비킴 */
+  body:has(#build-bar:not([hidden])) #ctx, body:has(#camp-bar:not([hidden])) #ctx, body:has(#build-bar:not([hidden])) #talk { display: none; }
 </style>
 </head>
 <body>
 <div id="stage"></div>
 
 <div class="hud-top">
-  <div class="chip title"><span class="emblem" aria-hidden="true"></span>사계절 행성<span class="step">14단계</span></div>
+  <div class="chip title"><span class="emblem" aria-hidden="true"></span>사계절 행성<span class="step">15단계</span></div>
   <div class="top-right">
     <button type="button" class="chip press view-toggle" id="view-toggle">캐릭터 보기</button>
     <div class="chip fps" id="fps" aria-hidden="true">– fps</div>
@@ -408,6 +480,8 @@
 </div>
 <div class="npc-labels" id="npc-labels" aria-hidden="true"></div>
 <button type="button" class="press talk" id="talk" hidden>이야기하기</button>
+<button type="button" class="press talk ctx" id="ctx" hidden>낚시하기</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="dialog" id="dialog" role="dialog" aria-live="polite" hidden><div class="dialog-name" id="dialog-name"></div><p class="dialog-text" id="dialog-text"></p><span class="dialog-next" id="dialog-next">다음</span></div>
 <div class="together" id="together-panel" role="dialog" aria-label="멀티" hidden>
   <div class="together-head"><strong>멀티</strong><span class="together-who" id="together-who"></span><button type="button" class="press together-close" id="together-close">닫기</button></div>
@@ -433,6 +507,38 @@
   <div class="together-head"><strong>기록장</strong><span class="together-who" id="journal-sub"></span><button type="button" class="press together-close" id="journal-close">닫기</button></div>
   <div class="journal-body" id="journal-body"></div>
 </div>
+<div class="together sheet" id="bag" role="dialog" aria-label="가방" hidden>
+  <div class="together-head"><strong>가방</strong><span class="together-who" id="bag-note"></span><button type="button" class="press together-close" id="bag-close">닫기</button></div>
+  <div class="bag-list" id="bag-list"></div>
+</div>
+<div class="together sheet" id="build-menu" role="dialog" aria-label="짓기" hidden>
+  <div class="together-head"><strong>짓기</strong><span class="together-who">친구와 같은 방이면 같이 보여요</span><button type="button" class="press together-close" id="build-close">닫기</button></div>
+  <div class="build-grid">
+    <button type="button" class="press build-opt" data-k="house" style="--c: #f7a9c8"><b>집</b><small>아늑한 오두막, 색을 고를 수 있어요</small></button>
+    <button type="button" class="press build-opt" data-k="tent" style="--c: #f08a4b"><b>텐트</b><small>캠핑할 때 하나쯤</small></button>
+    <button type="button" class="press build-opt" data-k="field" style="--c: #8fbf5a"><b>밭</b><small>여섯 칸에 작물을 길러요</small></button>
+    <button type="button" class="press build-opt" data-k="fire" style="--c: #ffb43a"><b>모닥불</b><small>둘러앉아 기타 치고 노래해요</small></button>
+  </div>
+  <button type="button" class="press bar-btn remove-btn" id="build-remove">지은 것 치우기</button>
+</div>
+<div class="together sheet" id="seeds" role="dialog" aria-label="씨앗 고르기" hidden>
+  <div class="together-head"><strong>무엇을 심을까요?</strong><button type="button" class="press together-close" id="seeds-close">닫기</button></div>
+  <div class="build-grid" id="seed-grid"></div>
+</div>
+<div class="lifebar" id="build-bar" role="toolbar" aria-label="짓기" hidden>
+  <span class="bar-note" id="build-why" role="status"></span>
+  <button type="button" class="press bar-btn" id="build-rotate" aria-label="돌리기 (R)">돌리기</button>
+  <button type="button" class="press bar-btn" id="build-color" aria-label="색 바꾸기">색</button>
+  <button type="button" class="press bar-btn primary" id="build-ok">짓기</button>
+  <button type="button" class="press bar-btn" id="build-cancel" aria-label="그만두기 (Esc)">취소</button>
+</div>
+<div class="lifebar" id="camp-bar" role="toolbar" aria-label="모닥불" hidden>
+  <button type="button" class="press bar-btn" id="camp-guitar" aria-pressed="false">기타 치기</button>
+  <button type="button" class="press bar-btn" id="camp-sing" aria-pressed="false">노래하기</button>
+  <button type="button" class="press bar-btn" id="camp-song">모닥불 노래</button>
+  <button type="button" class="press bar-btn" id="camp-bag">가방</button>
+  <button type="button" class="press bar-btn primary" id="camp-up">일어나기</button>
+</div>
 <div class="raceboard" id="raceboard" hidden></div>
 <div class="countdown" id="countdown" aria-live="assertive"></div>
 <div class="flash" id="flash"></div>
@@ -452,6 +558,8 @@
     <button type="button" class="press emote-opt" role="menuitem" data-emote="heart"><kbd>3</kbd>하트</button>
     <button type="button" class="press emote-opt" role="menuitem" data-emote="dance"><kbd>4</kbd>춤</button>
   </div>
+  <button type="button" class="press tool-btn build-btn" id="build-btn" aria-label="짓기 (B)" title="짓기 (B)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4l6 6-3 3-6-6z"/><path d="M11 7l-7 7a2 2 0 0 0 3 3l7-7"/></svg></button>
+  <button type="button" class="press tool-btn bag-btn" id="bag-btn" aria-label="가방 (I)" title="가방 (I)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="bag-count" id="bag-count" hidden></span></button>
   <button type="button" class="press jump" id="jump">점프</button>
 </div>
 <div id="loading" role="status"><div class="orb" aria-hidden="true"></div><p>행성을 만드는 중…</p></div>
@@ -810,6 +918,8 @@ void main() {
     return sum / norm;
   }
 
+  const boost = { run: 1, jump: 1 }; // 먹으면 잠깐 더 빨리 · 더 높이 (생활 모듈이 바꿈)
+
   // 부품(지오메트리 · 색 · 위치 · 회전 · 크기) 여러 개를 꼭짓점 색 지오메트리 하나로 합침 → 한 번에 그림
   const P = (geometry, color, pos = [0, 0, 0], rot = [0, 0, 0], scale = [1, 1, 1]) => ({ geometry, color, pos, rot, scale });
   const _mp = { m: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(), p: new THREE.Vector3(), s: new THREE.Vector3() };
@@ -850,7 +960,7 @@ void main() {
   // ═══════════════════════════════════════════════
   // 2. CORE — 렌더러 · 씬 · 카메라 · 업데이트 등록
   // ═══════════════════════════════════════════════
-  let renderer, scene, camera, clock, sunDir, space, stars, sunGroup, sunLight, rimLight, ambientLight, terrain, props, character, player, stick, keys, planetView, followView, rig, hud, fx, gems, audio, friends, together, emotes, journal;
+  let renderer, scene, camera, clock, sunDir, space, stars, sunGroup, sunLight, rimLight, ambientLight, terrain, props, character, player, stick, keys, planetView, followView, rig, hud, fx, gems, audio, friends, together, emotes, journal, animals, world, life;
   let pixelRatio = 1;
   const maxPixelRatio = () => Math.min(window.devicePixelRatio || 1, CONFIG.maxPixelRatio);
   const updaters = [];
@@ -1853,12 +1963,18 @@ void main() {
 
     return {
       meshes, collide, rayBlock,
-      addCollider(up, r, h) { // 주민처럼 나중에 세우는 것들도 부딪히게
+      addCollider(up, r, h, key = 'friend') { // 주민 · 지은 것처럼 나중에 세우는 것들도 부딪히게
         const ground = terrain.radiusAt(up);
-        const c = { up: up.clone(), r, top: ground + h, ground, key: 'friend' };
+        const c = { up: up.clone(), r, top: ground + h, ground, key };
         colliders.push(c);
         insert(hitGrid, HIT_CELL, c);
         return c;
+      },
+      removeCollider(c) { // 치운 집 · 텐트 · 모닥불
+        const i = colliders.indexOf(c);
+        if (i >= 0) colliders.splice(i, 1);
+        const k = R / HIT_CELL, list = hitGrid.get(cellKey(Math.floor(c.up.x * k), Math.floor(c.up.y * k), Math.floor(c.up.z * k)));
+        if (list) { const j = list.indexOf(c); if (j >= 0) list.splice(j, 1); }
       },
       counts: Object.fromEntries(TYPES.map((T, i) => [T.key, placed[i].length])),
       buildMs: Math.round(performance.now() - started),
@@ -2108,6 +2224,7 @@ void main() {
         else applyEmote(e, { arms, legs, torso: upper, neck, lift: upper });
       }
       if (api.pose === 'cheese') { arms[0].rotation.set(0, 0, 2.4); arms[1].rotation.set(0, 0, -2.4); } // 사진 포즈: 두 팔 번쩍
+      else if (api.activity) applyActivity(api.activity, { arms, legs, torso: upper, neck, body }, dt); // 앉기 · 낚시 · 기타 · 노래 · 먹기
     }
 
     const api = {
@@ -2118,6 +2235,7 @@ void main() {
       onStep: null, // 발을 디딜 때마다 불림 (발소리)
       pose: null, // 'cheese' = 사진 포즈
       emote: null, // { kind, t } 반응 중
+      activity: null, // { k, t, ... } 앉기 · 낚시 · 기타 · 노래 · 먹기
     };
     return api;
   }
@@ -2268,7 +2386,7 @@ void main() {
 
       // 2) 속도: 땅에선 빠르게, 공중에선 천천히 목표를 따라감. 얕은 물속은 느리게
       const wading = terrain.radiusAt(up) < terrain.waterRadius - 0.1;
-      target.copy(move).multiplyScalar(strength * K.runSpeed * (wading ? K.waterSlow : 1));
+      target.copy(move).multiplyScalar(strength * K.runSpeed * (wading ? K.waterSlow : 1) * boost.run);
       vel.lerp(target, 1 - Math.exp(-(grounded ? K.accel : K.airAccel) * dt)).projectOnPlane(up);
 
       // 3) 구면 위로 한 걸음: 위 벡터를 (위 × 속도) 축으로 굴림
@@ -2302,7 +2420,7 @@ void main() {
         grounded = false;
         coyote = 0;
         jumpBuffer = 0;
-        vy = K.jumpSpeed;
+        vy = K.jumpSpeed * boost.jump;
         if (on.jump) on.jump();
       }
       if (!grounded) {
@@ -3233,7 +3351,7 @@ void main() {
 
     let enabled = true;
     try { enabled = localStorage.getItem(KEY) !== 'off'; } catch (e) { /* 저장된 설정 없음 → 켜짐 */ }
-    let ctx = null, master, analyser, sfxBus, musicBus, ambBus, verbSend, noise, amb;
+    let ctx = null, master, analyser, sfxBus, musicBus, ambBus, verbSend, noise, amb, duckLevel = 1;
     const button = $('sound');
     const syncButton = () => button.setAttribute('aria-pressed', String(enabled));
     syncButton();
@@ -3463,6 +3581,30 @@ void main() {
     let mixWait = 0;
     return {
       setEnabled,
+      get ctx() { return ready() ? ctx : null; }, // 기타 · 노래 합성용
+      get buses() { return ctx ? { sfx: sfxBus, music: musicBus, verb: verbSend } : null; },
+      duck(v) { // 모닥불 연주가 들리면 배경 음악을 작게
+        if (!ctx || !musicBus || Math.abs(v - duckLevel) < 0.02) return;
+        duckLevel = v;
+        musicBus.gain.setTargetAtTime(0.75 * v, ctx.currentTime, 0.5);
+      },
+      fx(kind, vol = 0.5) { // 낚시 · 농사 · 짓기 · 모닥불 · 먹기 소리
+        if (!ready()) return;
+        const t = ctx.currentTime + 0.01, v = vol, rnd = Math.random;
+        if (kind === 'splash') { noiseHit(t, { type: 'bandpass', freq: 1300, sweepTo: 380, q: 0.8, a: 0.005, d: 0.35, peak: 0.3 * v }); noiseHit(t + 0.04, { type: 'lowpass', freq: 650, a: 0.01, d: 0.28, peak: 0.2 * v }); }
+        else if (kind === 'cast') noiseHit(t, { type: 'bandpass', freq: 2600, sweepTo: 800, q: 1.2, a: 0.03, d: 0.3, peak: 0.14 * v });
+        else if (kind === 'bite') { tone(t, { freq: 560, sweepTo: 240, d: 0.14, peak: 0.14 * v }); noiseHit(t, { type: 'bandpass', freq: 900, q: 1, a: 0.003, d: 0.16, peak: 0.24 * v }); }
+        else if (kind === 'reel') { for (let i = 0; i < 7; i++) noiseHit(t + i * 0.045, { type: 'bandpass', freq: 3300, q: 3, a: 0.001, d: 0.02, peak: 0.16 * v }); }
+        else if (kind === 'catch') { noiseHit(t, { type: 'bandpass', freq: 1100, sweepTo: 300, q: 0.7, a: 0.005, d: 0.4, peak: 0.3 * v }); [660, 880, 1320].forEach((f, i) => tone(t + 0.1 + i * 0.09, { freq: f, type: 'triangle', d: 0.28, peak: 0.08 * v, send: 0.3 })); }
+        else if (kind === 'plant') { noiseHit(t, { type: 'lowpass', freq: 420, a: 0.004, d: 0.14, peak: 0.35 * v }); tone(t, { freq: 190, sweepTo: 120, d: 0.1, peak: 0.08 * v }); }
+        else if (kind === 'water') { for (let i = 0; i < 12; i++) noiseHit(t + i * 0.035 + rnd() * 0.02, { type: 'bandpass', freq: 2400 + rnd() * 2600, q: 2, a: 0.002, d: 0.05, peak: 0.1 * v }); }
+        else if (kind === 'pop') { tone(t, { freq: 420, sweepTo: 950, d: 0.1, peak: 0.14 * v }); tone(t + 0.08, { freq: 1050, type: 'triangle', d: 0.22, peak: 0.07 * v, send: 0.3 }); }
+        else if (kind === 'build') { [0, 0.2, 0.4].forEach((dt) => { noiseHit(t + dt, { type: 'bandpass', freq: 750, q: 1.5, a: 0.002, d: 0.08, peak: 0.4 * v }); tone(t + dt, { freq: 190, sweepTo: 120, d: 0.09, peak: 0.12 * v }); }); }
+        else if (kind === 'crackle') noiseHit(t, { type: 'bandpass', freq: 1800 + rnd() * 2600, q: 1.5, a: 0.001, d: 0.02 + rnd() * 0.04, peak: (0.06 + rnd() * 0.14) * v });
+        else if (kind === 'sizzle') noiseHit(t, { type: 'bandpass', freq: 5200, q: 0.6, a: 0.05, d: 0.9, peak: 0.12 * v });
+        else if (kind === 'chomp') noiseHit(t, { type: 'bandpass', freq: 1300 + rnd() * 700, q: 1.2, a: 0.004, d: 0.06, peak: 0.3 * v });
+        else if (kind === 'flutter') { for (let i = 0; i < 9; i++) noiseHit(t + i * 0.04, { type: 'bandpass', freq: 1500, q: 0.8, a: 0.005, d: 0.03, peak: 0.12 * v }); }
+      },
       get enabled() { return enabled; },
       step(speed) {
         if (!ready()) return;
@@ -4068,7 +4210,11 @@ void main() {
     function rebuild() { snapshot = Object.freeze([...(selfPeer ? [selfPeer] : []), ...[...others.values()].map((o) => o.peer)]); }
     function changed(ch) { rebuild(); call(L.peers, Object.freeze({ peers: snapshot, joined: ch.joined || [], left: ch.left || [], updated: ch.updated || [] })); }
     function setConnected(v) { if (v !== connected) { connected = v; call(L.conn, v); } }
-    function setStatus(s, info) { status = s; call(L.status, s, info); }
+    function setStatus(s, info) {
+      status = s;
+      if ((s === 'idle' || s === 'error') && world) world.useLocal(); // 방을 나오면 내 세계로
+      call(L.status, s, info);
+    }
     const send = (m) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); };
     function drop() { // 연결 정리: 다른 사람 목록은 조용히 비움 (나간다는 인사 없이)
       clearTimeout(timer);
@@ -4103,6 +4249,7 @@ void main() {
     }
     function onMessage(m) {
       if (m.t === 'joined') {
+        const made = want && want.t === 'create';
         code = String(m.room);
         you = String(m.you);
         nick = String(m.nick || nick);
@@ -4117,6 +4264,9 @@ void main() {
         clearInterval(beat);
         beat = setInterval(() => send({ t: 'hb' }), 50000); // 다들 가만히 있어도 무료 서버가 잠들지 않게
         if (Object.keys(myPres).length) send({ t: 'presence', p: myPres });
+        if (world) { if (made) world.remember(code); world.useRoom(Array.isArray(m.world) ? m.world : [], Number(m.now), !!m.fresh, code); }
+      } else if (m.t === 'world' && m.op && world && world.mode === 'room') {
+        world.applyOp(m.op);
       } else if (m.t === 'peer' && typeof m.id === 'string') {
         const peer = peerOf(m.id, freezeP(m.p), false);
         others.set(m.id, { nick: String(m.nick || ''), peer });
@@ -4173,7 +4323,9 @@ void main() {
     return {
       room, user, downloads,
       get status() { return status; }, get code() { return code; }, get nick() { return nick; },
-      create(n) { nick = n; want = { t: 'create', nick: n }; retry = 0; setStatus('connecting'); open(); },
+      create(n) { nick = n; want = { t: 'create', nick: n, world: world ? world.localItems() : [] }; retry = 0; setStatus('connecting'); open(); },
+      act(op) { send({ ...op, t: 'act' }); }, // 짓기 · 심기 · 물 주기 · 거두기 · 치우기
+      seed(items) { send({ t: 'seed', items }); },
       join(c, n) { nick = n; want = { t: 'join', room: c, nick: n }; retry = 0; setStatus('connecting'); open(); },
       leave() { send({ t: 'leave' }); want = null; code = null; you = null; setStatus('idle'); drop(); },
       onStatus(h) { L.status.push(h); },
@@ -4709,6 +4861,7 @@ void main() {
       const b = buddies.get(key);
       if (!b) return;
       if (race.id && b.raceGot) race.ghosts.push({ key: b.key, name: b.name, got: b.raceGot }); // 나간 친구가 모은 건 그대로
+      if (life) life.dropBuddy(b);
       scene.remove(b.anchor);
       b.anchor.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
       b.shadow.material.dispose();
@@ -4766,6 +4919,7 @@ void main() {
           if (el < RACE_LEAD + dur) beginRace(rc.i, Number(rc.seed) | 0, clamp(Number(rc.n) | 0, 3, 12), dur, RACE_LEAD - el, b.name);
         }
         b.raceGot = pr.rt && pr.rt.i === race.id && Array.isArray(pr.rt.got) ? pr.rt.got.slice(0, 12) : null;
+        if (life) life.onBuddy(b, pr, isNew);
       }
       for (const key of [...buddies.keys()]) if (!here.has(key)) removeBuddy(key);
       return others;
@@ -4803,6 +4957,7 @@ void main() {
           if (b.emote.t >= EMOTES[b.emote.kind].dur || (EMOTES[b.emote.kind].whole && s > 0.15)) b.emote = null;
           else if (!(b.cheer > 0 || b.posing)) applyEmote(b.emote, { arms: b.arms, legs: b.legs, torso: b.body, neck: b.neck, lift: b.body });
         }
+        if (b.act && !(b.cheer > 0 || b.posing)) applyActivity(b.act, { arms: b.arms, legs: b.legs, torso: b.body, neck: b.neck, body: b.body }, dt);
         b.root.position.y = b.height;
         b.shadow.position.y = 0.04 - b.height;
         b.shadow.scale.setScalar(1 / (1 + b.height * 0.55));
@@ -4851,6 +5006,7 @@ void main() {
         hh: r2(player.height), sp: r2(clamp(player.moving, 0, 1)), g: d.grounded ? 1 : 0, vy: Math.round(d.vy * 10) / 10,
         o: friends.saved.gifts.reduce((m, g, i) => m | (g ? 1 << i : 0), 0),
         pose: localPose, chat: myChat.length ? myChat : null, photo: myPhoto, race: raceHost, em: emotes ? emotes.last : null,
+        ac: life ? life.presAct : null, gf: life ? life.presGifts : null,
         rt: race.id && race.mine.length ? { i: race.id, got: race.mine } : null,
       };
       const json = JSON.stringify(pres);
@@ -4885,19 +5041,19 @@ void main() {
       updateWho(0);
     })();
 
-    let whoWait = 0;
+    let whoWait = 0, lastOthers = -1;
     function update(dt, time) {
       publish(dt);
       const others = syncPeers();
       whoWait -= dt;
-      if (whoWait <= 0) { whoWait = 0.5; updateWho(others); }
+      if (whoWait <= 0 || others !== lastOthers) { whoWait = 0.5; lastOthers = others; updateWho(others); }
       moveBuddies(dt, time);
       raceStep(dt, time);
       tickCountdown();
       placeTags();
     }
     return {
-      update, sendChat, on: hooks,
+      update, sendChat, on: hooks, myKey,
       nearestBuddy(r) { let best = null, bd = r; for (const b of buddies.values()) { const d = b.anchor.position.distanceTo(player.anchor.position); if (d < bd) { bd = d; best = b.anchor.position; } } return best; },
       get buddies() { return buddies; }, get race() { return race; }, get connected() { return connected && !!room; },
       debug() { return { room: !!room, connected, buddies: [...buddies.values()].map((b) => ({ name: b.name, pos: b.anchor.position.toArray().map((v) => +v.toFixed(2)) })), race: { id: race.id, active: race.active, over: race.over, n: race.gems.length, owner: race.owner.map((o) => (o ? o.name : null)) } }; },
@@ -5021,6 +5177,1308 @@ void main() {
       },
       open: () => setOpen(true), close: () => setOpen(false),
       get data() { return data; },
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 16-2. LIFE HELPERS — 활동 자세(앉기 · 낚시 · 기타 · 노래 · 먹기), 구 위에 물건 세우기
+  // ═══════════════════════════════════════════════
+  // P: { arms: [왼팔, 오른팔], legs, torso, neck, body }  body.position.y = 엉덩이 높이
+  function applyActivity(a, P, dt) {
+    a.t = (a.t || 0) + dt;
+    const t = a.t, k = Math.min(1, t / 0.25); // 처음 0.25초 동안 자세로 옮겨 감
+    const [armL, armR] = P.arms;
+    const rot = (o, x, y, z) => { o.rotation.x = mix(o.rotation.x, x, k); o.rotation.y = mix(o.rotation.y, y, k); o.rotation.z = mix(o.rotation.z, z, k); };
+    const seated = a.k === 'sit' || a.k === 'guitar' || ((a.k === 'sing' || a.k === 'eat') && a.seat);
+    if (seated) { // 다리를 앞으로 뻗고 땅에 앉음
+      P.legs.forEach((l, i) => rot(l, -1.42, 0, (i ? -1 : 1) * 0.1));
+      P.body.position.y = mix(P.body.position.y, 0.22, k);
+      P.torso.rotation.x = mix(P.torso.rotation.x, -0.04, k);
+    }
+    if (a.k === 'sit') {
+      rot(armL, -0.6, 0, 0.2); rot(armR, -0.6, 0, -0.2);
+      P.neck.rotation.x = 0.06 * Math.sin(t * 0.9);
+    } else if (a.k === 'fish') {
+      const tug = a.bite ? 0.22 * Math.sin(t * 34) : 0.035 * Math.sin(t * 2.2);
+      rot(armR, -1.1 + tug, 0, -0.08); rot(armL, -0.95 + tug, -0.3, 0.2);
+      if (a.cast < 0.55) { const c = Math.sin(Math.PI * Math.min(1, a.cast / 0.55)); armR.rotation.x -= 1.5 * c; armL.rotation.x -= 1.2 * c; a.cast += dt; } // 던지기: 뒤로 들었다가 휙
+    } else if (a.k === 'guitar') {
+      const s = a.strum || 0; // 줄을 칠 때 1 → 0
+      rot(armL, -1.05, 0.35, 0.62); // 줄 누르는 손: 기타 목 쪽 (왼쪽)
+      armR.rotation.x = mix(armR.rotation.x, -0.62 - 0.32 * s, k);
+      armR.rotation.y = mix(armR.rotation.y, -0.3, k);
+      armR.rotation.z = mix(armR.rotation.z, -0.28, k);
+      P.neck.rotation.x = 0.16 + 0.05 * Math.sin(t * 5.2); // 박자에 고개 끄덕
+      P.neck.rotation.z = 0.07 * Math.sin(t * 2.6);
+    } else if (a.k === 'sing') {
+      const sw = Math.sin(t * 2.4);
+      rot(armL, -0.45, 0, 0.38 + 0.12 * sw); rot(armR, -0.45, 0, -0.38 + 0.12 * sw);
+      P.neck.rotation.x = -0.2 + 0.05 * Math.sin(t * 4.8); // 고개 들고 흔들흔들
+      P.neck.rotation.z = 0.13 * sw;
+      P.torso.rotation.z = 0.05 * sw;
+    } else if (a.k === 'eat') {
+      const chew = Math.max(0, Math.sin(t * 15));
+      rot(armR, -2.15 + 0.12 * chew, 0.2, -0.5); rot(armL, -0.35, 0, 0.18);
+      P.neck.rotation.x = 0.07 * chew;
+    }
+  }
+
+  // 구 위의 한 점 d(단위 벡터)에서 yaw만큼 돌린 방향: y = 위, z = 앞 (모두가 같은 기준이라 친구 화면에서도 같은 방향)
+  const _fr = { r: new THREE.Vector3(), e: new THREE.Vector3(), n: new THREE.Vector3(), f: new THREE.Vector3(), s: new THREE.Vector3(), m: new THREE.Matrix4() };
+  function tangentFrame(d) { // 동쪽 · 북쪽 (극 근처는 다른 기준)
+    const ref = Math.abs(d.y) < 0.95 ? _fr.r.set(0, 1, 0) : _fr.r.set(1, 0, 0);
+    _fr.e.crossVectors(ref, d).normalize();
+    _fr.n.crossVectors(d, _fr.e).normalize();
+    return _fr;
+  }
+  function frameQuat(d, yaw, out) {
+    const F = tangentFrame(d);
+    F.f.copy(F.n).multiplyScalar(Math.cos(yaw)).addScaledVector(F.e, Math.sin(yaw));
+    F.s.crossVectors(d, F.f).normalize();
+    return out.setFromRotationMatrix(F.m.makeBasis(F.s, d, F.f));
+  }
+  function yawOf(d, forward) { const F = tangentFrame(d); return Math.atan2(forward.dot(F.e), forward.dot(F.n)); }
+  function prismGeo(w, h, d) { // 삼각 지붕 기둥: 밑면 w × d, 높이 h, 용마루는 x축 방향
+    const x = w / 2, z = d / 2;
+    const v = [[-x, 0, -z], [x, 0, -z], [x, 0, z], [-x, 0, z], [-x, h, 0], [x, h, 0]];
+    const tris = [[0, 4, 5], [0, 5, 1], [3, 2, 5], [3, 5, 4], [0, 3, 4], [1, 5, 2]];
+    const pos = [];
+    for (const tr of tris) for (const i of tr) pos.push(...v[i]);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    return g;
+  }
+  const isLand = (d, margin = 0.06) => terrain.radiusAt(d) > terrain.waterRadius + margin;
+
+  // ═══════════════════════════════════════════════
+  // 16-3. ANIMALS — 다람쥐(숲) · 토끼(풀밭) · 물고기(호수) · 새(하늘)
+  //    각자 화면에서 따로 움직이는 배경 동물. 가까이 가면 달아나거나 날아감
+  // ═══════════════════════════════════════════════
+  function createAnimals() {
+    const rng = makeRng(CONFIG.seed + 2201);
+    const R = CONFIG.planet.radius, WR = terrain.waterRadius;
+    const material = addNearFade(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85, metalness: 0 }));
+    const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const DARK = 0x231b22, WHITE = 0xffffff;
+    const GEO = {
+      squirrel: mergeParts([
+        P(B(0.2, 0.2, 0.3), 0xb8683a, [0, 0.17, 0]), P(B(0.14, 0.1, 0.2), 0xf1dcb8, [0, 0.12, 0.03]),
+        P(B(0.18, 0.17, 0.17), 0xbf7040, [0, 0.3, 0.17]), P(B(0.05, 0.08, 0.03), 0xa55a2e, [0.05, 0.42, 0.15]), P(B(0.05, 0.08, 0.03), 0xa55a2e, [-0.05, 0.42, 0.15]),
+        P(B(0.035, 0.035, 0.01), DARK, [0.05, 0.33, 0.26]), P(B(0.035, 0.035, 0.01), DARK, [-0.05, 0.33, 0.26]), P(B(0.04, 0.03, 0.02), 0x5a3322, [0, 0.28, 0.265]),
+        P(B(0.15, 0.36, 0.13), 0xa55a2e, [0, 0.33, -0.2], [-0.35, 0, 0]), P(B(0.17, 0.14, 0.17), 0xd08a55, [0, 0.52, -0.25]),
+        P(B(0.06, 0.08, 0.08), 0x8f4c28, [0.06, 0.04, 0.1]), P(B(0.06, 0.08, 0.08), 0x8f4c28, [-0.06, 0.04, 0.1]),
+      ]),
+      rabbit: mergeParts([ // 흰 바탕 → 한 마리씩 색을 입힘 (흰 · 갈색 · 회색)
+        P(B(0.26, 0.24, 0.34), WHITE, [0, 0.18, 0]), P(B(0.2, 0.2, 0.2), WHITE, [0, 0.34, 0.17]),
+        P(B(0.055, 0.22, 0.035), WHITE, [0.055, 0.53, 0.13], [-0.2, 0, 0.12]), P(B(0.055, 0.22, 0.035), WHITE, [-0.055, 0.53, 0.13], [-0.2, 0, -0.12]),
+        P(B(0.03, 0.15, 0.01), 0xf4b6c2, [0.055, 0.53, 0.152], [-0.2, 0, 0.12]), P(B(0.03, 0.15, 0.01), 0xf4b6c2, [-0.055, 0.53, 0.152], [-0.2, 0, -0.12]),
+        P(B(0.035, 0.04, 0.01), DARK, [0.06, 0.37, 0.27]), P(B(0.035, 0.04, 0.01), DARK, [-0.06, 0.37, 0.27]), P(B(0.04, 0.03, 0.02), 0xf08a9c, [0, 0.31, 0.275]),
+        P(B(0.11, 0.11, 0.08), WHITE, [0, 0.22, -0.21]),
+        P(B(0.08, 0.07, 0.16), WHITE, [0.08, 0.035, -0.08]), P(B(0.08, 0.07, 0.16), WHITE, [-0.08, 0.035, -0.08]),
+      ]),
+      fish: mergeParts([
+        P(B(0.12, 0.16, 0.36), WHITE, [0, 0, 0]), P(B(0.09, 0.07, 0.3), 0xd8dde6, [0, 0.07, -0.01]),
+        P(B(0.02, 0.18, 0.12), WHITE, [0, 0, -0.24]), P(B(0.02, 0.07, 0.12), WHITE, [0, 0.11, 0.02]),
+        P(B(0.125, 0.035, 0.035), DARK, [0, 0.03, 0.12]),
+      ]),
+      bird: mergeParts([
+        P(B(0.14, 0.13, 0.24), WHITE, [0, 0, 0]), P(B(0.12, 0.12, 0.12), WHITE, [0, 0.08, 0.13]), P(B(0.1, 0.06, 0.12), 0xf4efe6, [0, -0.045, 0.02]),
+        P(B(0.04, 0.03, 0.07), 0xf2b53a, [0, 0.07, 0.22]), P(B(0.125, 0.025, 0.025), DARK, [0, 0.1, 0.17]),
+        P(B(0.1, 0.025, 0.13), WHITE, [0, 0.02, -0.17], [0.25, 0, 0]),
+      ]),
+      wing: mergeParts([P(B(0.22, 0.02, 0.13), WHITE, [0.11, 0, 0])]), // 날개 경첩 = x 0
+    };
+    const TINT = {
+      rabbit: [0xffffff, 0xc9a37d, 0xa9a9b3, 0xe8dccb].map((h) => new THREE.Color(h)),
+      fish: [0xf3b8c4, 0xf2a33c, 0xd9574a, 0xbcd6ea].map((h) => new THREE.Color(h)), // 봄 · 여름 · 가을 · 겨울 호수
+      bird: [0x5b8fd9, 0xc0673b, 0x9b7b5a, 0xe8eef5, 0x5fae78].map((h) => new THREE.Color(h)),
+    };
+    const meshOf = (geo, n) => { const m = new THREE.InstancedMesh(geo, material, n); m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); return m; };
+
+    // ── 자리 찾기 ──
+    const randDir = () => { let x, y, z, l; do { x = rng() * 2 - 1; y = rng() * 2 - 1; z = rng() * 2 - 1; l = x * x + y * y + z * z; } while (l > 1 || l < 0.01); return new THREE.Vector3(x, y, z).divideScalar(Math.sqrt(l)); };
+    const nrm = new THREE.Vector3();
+    function landSpot(seasons, tries = 800) {
+      for (let i = 0; i < tries; i++) {
+        const d = randDir();
+        if (!seasons.includes(terrain.seasonAt(d))) continue;
+        const g = terrain.radiusAt(d, nrm);
+        if (g < WR + 0.15 || nrm.dot(d) < 0.9 || d.y > 0.985) continue;
+        return d;
+      }
+      return null;
+    }
+    const around = (d, dist) => { // d 둘레 dist(m) 안의 아무 점
+      const F = tangentFrame(d), a = rng() * Math.PI * 2, r = Math.sqrt(rng()) * dist / R;
+      return d.clone().multiplyScalar(Math.cos(r)).addScaledVector(F.e, Math.cos(a) * Math.sin(r)).addScaledVector(F.n, Math.sin(a) * Math.sin(r)).normalize();
+    };
+
+    // ── 땅 동물: 다람쥐는 나무 곁, 토끼는 풀밭 ──
+    const walkers = [];
+    const trees = Object.entries(props.debug.placed).filter(([k]) => /cherry|broad|maple/.test(k)).flatMap(([, list]) => list);
+    for (let i = 0; i < 14 && trees.length; i++) {
+      const tr = trees[Math.floor(rng() * trees.length)], home = around(tr.up || tr.dir || tr, 2.2);
+      if (isLand(home, 0.15)) walkers.push({ kind: 'squirrel', home, dir: home.clone(), tint: null });
+    }
+    for (let i = 0; i < 16; i++) {
+      const home = landSpot(i < 5 ? [0] : i < 10 ? [1] : i < 13 ? [3] : [2]);
+      if (home) walkers.push({ kind: 'rabbit', home, dir: home.clone(), tint: TINT.rabbit[terrain.seasonAt(home) === 3 ? 0 : 1 + Math.floor(rng() * 3)] });
+    }
+    for (const w of walkers) Object.assign(w, {
+      heading: tangentFrame(w.dir).n.clone().applyAxisAngle(w.dir, rng() * 6.28), state: 'idle', wait: rng() * 3, hops: 0,
+      from: w.dir.clone(), to: w.dir.clone(), u: 1, hop: 0, pitch: 0, // u < 1 = 폴짝 뛰는 중
+    });
+    const squirrelMesh = meshOf(GEO.squirrel, walkers.filter((w) => w.kind === 'squirrel').length || 1);
+    const rabbitMesh = meshOf(GEO.rabbit, walkers.filter((w) => w.kind === 'rabbit').length || 1);
+    walkers.filter((w) => w.kind === 'rabbit').forEach((w, i) => rabbitMesh.setColorAt(i, w.tint));
+
+    // ── 물고기: 깊은 물 한가운데를 집으로 ──
+    const fish = [];
+    for (let tries = 0; fish.length < 28 && tries < 20000; tries++) {
+      const d = randDir();
+      if (terrain.radiusAt(d) > WR - 0.45) continue;
+      const s = terrain.seasonAt(d);
+      fish.push({ home: d.clone(), dir: d.clone(), heading: tangentFrame(d).n.clone().applyAxisAngle(d, rng() * 6.28), speed: 0.6 + rng() * 0.7, depth: 0.25 + rng() * 0.35, turn: 0, turnIn: 0, phase: rng() * 6, jump: null, jumpIn: 15 + rng() * 50, tint: TINT.fish[s], size: 0.8 + rng() * 0.5 });
+    }
+    const fishMesh = meshOf(GEO.fish, Math.max(1, fish.length));
+    fish.forEach((f, i) => fishMesh.setColorAt(i, f.tint));
+
+    // ── 새: 계절마다 한 무리씩 빙빙 돌다가 가끔 내려앉음 ──
+    const flocks = [], birds = [];
+    for (let s = 0; s < 5; s++) {
+      const center = new THREE.Vector3().fromArray(SEASONS[s % 4].center).normalize();
+      if (s === 4) center.applyAxisAngle(new THREE.Vector3(1, 0, 0), 0.5).normalize();
+      const F = tangentFrame(center);
+      const fl = { center, e1: F.e.clone(), e2: F.n.clone(), rho: (9 + rng() * 6) / R, alt: 7 + rng() * 4, w: (0.12 + rng() * 0.08) * (rng() < 0.5 ? -1 : 1), phase: rng() * 6.28, mode: 'fly', t: 0, spot: null, landIn: 25 + rng() * 40, members: [] };
+      const tint = TINT.bird[s];
+      for (let i = 0; i < 5; i++) {
+        const b = { fl, i, off: new THREE.Vector3((rng() - 0.5) * 1.6, (rng() - 0.5) * 0.8, (rng() - 0.5) * 1.6), flap: rng() * 6, pos: new THREE.Vector3(), fwd: new THREE.Vector3(0, 0, 1), ground: null, peck: 0, hopT: 0 };
+        fl.members.push(b);
+        birds.push(b);
+      }
+      fl.tint = tint;
+      flocks.push(fl);
+    }
+    const birdMesh = meshOf(GEO.bird, birds.length), wingMesh = meshOf(GEO.wing, birds.length * 2);
+    birds.forEach((b, i) => { birdMesh.setColorAt(i, b.fl.tint); wingMesh.setColorAt(i * 2, b.fl.tint); wingMesh.setColorAt(i * 2 + 1, b.fl.tint); });
+
+    const q = new THREE.Quaternion(), q2 = new THREE.Quaternion(), m4 = new THREE.Matrix4(), mW = new THREE.Matrix4(), pos = new THREE.Vector3(), sc = new THREE.Vector3(), side = new THREE.Vector3(), basis = new THREE.Matrix4();
+    const tA = new THREE.Vector3(), tB = new THREE.Vector3(), X = new THREE.Vector3(1, 0, 0), Yv = new THREE.Vector3(0, 1, 0), Zv = new THREE.Vector3(0, 0, 1);
+    const yawPi = new THREE.Quaternion().setFromAxisAngle(Yv, Math.PI);
+    const orient = (up, fwd, out) => { side.crossVectors(up, fwd).normalize(); fwd = tB.crossVectors(side, up).normalize(); return out.setFromRotationMatrix(basis.makeBasis(side, up, fwd)); };
+    const moveAlong = (dir, heading, dist) => { // 구 위에서 heading 방향으로 dist(m) 이동 (heading도 함께 굴림)
+      const axis = tA.crossVectors(dir, heading).normalize(), ang = dist / R;
+      dir.applyAxisAngle(axis, ang).normalize();
+      heading.applyAxisAngle(axis, ang).projectOnPlane(dir).normalize();
+    };
+    const threats = () => { // 나와 친구들 위치
+      const list = [player.anchor.position];
+      if (together) for (const b of together.buddies.values()) list.push(b.anchor.position);
+      return list;
+    };
+    let lure = null; // 낚시찌 (물고기가 모여듦)
+
+    function stepWalker(w, dt, threat) {
+      const S = w.kind === 'squirrel' ? { hop: 0.55, dur: 0.22, h: 0.14, flee: 3.2, run: 5, rest: [1, 3.5] } : { hop: 0.75, dur: 0.3, h: 0.22, flee: 3.8, run: 6, rest: [1.5, 5] };
+      const here = pos.copy(w.dir).multiplyScalar(R);
+      let near = null, nd = S.flee;
+      for (const p of threat) { const d = here.distanceTo(p); if (d < nd) { nd = d; near = p; } }
+      if (near && w.state !== 'flee') { // 달아나기: 사람 반대쪽으로 빠르게 여러 번 폴짝
+        w.state = 'flee'; w.hops = 3 + Math.floor(rng() * 3);
+        w.heading.copy(here).sub(near).projectOnPlane(w.dir).normalize();
+        if (w.heading.lengthSq() < 0.5) w.heading.copy(tangentFrame(w.dir).n);
+        w.u = 1;
+      }
+      if (w.u < 1) { // 폴짝 뛰는 중
+        w.u = Math.min(1, w.u + dt / (w.state === 'flee' ? S.dur * 0.8 : S.dur));
+        w.dir.copy(w.from).lerp(w.to, w.u).normalize();
+        w.hop = Math.sin(Math.PI * w.u) * S.h * (w.state === 'flee' ? 1.3 : 1);
+        w.pitch = -0.35 * Math.cos(Math.PI * w.u);
+        return;
+      }
+      w.hop = 0;
+      w.pitch = damp(w.pitch, w.kind === 'rabbit' && w.state === 'idle' && w.wait > 0.8 ? 0.28 : 0, 6, dt); // 토끼는 쉬는 동안 풀을 뜯음
+      if (w.hops > 0) { // 다음 폴짝
+        const toHome = tA.copy(w.home).sub(w.dir).projectOnPlane(w.dir);
+        if (w.state !== 'flee') {
+          w.heading.applyAxisAngle(w.dir, (rng() - 0.5) * 1.6);
+          if (toHome.length() * R > 5) w.heading.lerp(toHome.normalize(), 0.7).normalize();
+        }
+        const step = S.hop * (w.state === 'flee' ? 1.6 : 1);
+        const target = tB.copy(w.dir);
+        const axis = side.crossVectors(w.dir, w.heading).normalize();
+        target.applyAxisAngle(axis, step / R).normalize();
+        if (!isLand(target, 0.08)) { w.heading.applyAxisAngle(w.dir, Math.PI * (0.6 + rng() * 0.8)); w.hops = Math.max(0, w.hops - 1); return; } // 물이면 돌아섬
+        w.from.copy(w.dir); w.to.copy(target); w.u = 0; w.hops--;
+        return;
+      }
+      if (w.state === 'flee') { w.state = 'idle'; w.wait = 1 + rng() * 2; }
+      w.wait -= dt;
+      if (w.wait <= 0) { w.state = 'idle'; w.hops = 1 + Math.floor(rng() * (w.kind === 'squirrel' ? 4 : 3)); w.wait = S.rest[0] + rng() * (S.rest[1] - S.rest[0]); }
+    }
+
+    function stepFish(f, dt, time, playerPos) {
+      if (f.jump) { // 물 위로 폴짝
+        f.jump.t += dt;
+        if (f.jump.t >= f.jump.dur) { f.jump = null; if (audio && playerPos.distanceTo(tA.copy(f.dir).multiplyScalar(WR)) < 14) audio.fx('splash', 0.35); }
+      } else {
+        f.jumpIn -= dt;
+        f.turnIn -= dt;
+        if (f.turnIn <= 0) { f.turn = (rng() - 0.5) * 1.4; f.turnIn = 1 + rng() * 2.5; }
+        let steer = f.turn;
+        if (lure && f.lured) { // 낚시찌 쪽으로
+          const want = tA.copy(lure).sub(f.dir).projectOnPlane(f.dir);
+          if (want.length() * R > 0.5) steer = clamp(Math.atan2(tB.crossVectors(f.heading, want.normalize()).dot(f.dir), f.heading.dot(want)) * 2, -2, 2);
+          else steer = 1.2;
+        }
+        f.heading.applyAxisAngle(f.dir, steer * dt).normalize();
+        const ahead = tB.copy(f.dir).applyAxisAngle(side.crossVectors(f.dir, f.heading).normalize(), 0.9 / R);
+        const far = tA.copy(f.home).sub(f.dir).length() * R > 5;
+        if (terrain.radiusAt(ahead) > WR - 0.3 || far) { // 얕은 곳 · 집에서 멀면 집 쪽으로
+          const toHome = tA.copy(f.home).sub(f.dir).projectOnPlane(f.dir).normalize();
+          f.heading.lerp(toHome, Math.min(1, dt * 3)).projectOnPlane(f.dir).normalize();
+        }
+        moveAlong(f.dir, f.heading, f.speed * (lure && f.lured ? 1.3 : 1) * dt);
+        if (f.jumpIn <= 0) {
+          f.jumpIn = 20 + rng() * 50;
+          if (playerPos.distanceTo(tA.copy(f.dir).multiplyScalar(WR)) < 22 && !(lure && f.lured)) { f.jump = { t: 0, dur: 0.8 }; if (audio && playerPos.distanceTo(tA) < 14) audio.fx('splash', 0.25); }
+        }
+      }
+    }
+
+    function stepFlock(fl, dt, time, playerPos) {
+      fl.t += dt;
+      if (fl.mode === 'fly') {
+        fl.landIn -= dt;
+        if (fl.landIn <= 0) { // 사람 근처(너무 가깝진 않게) 풀밭에 내려앉기
+          fl.landIn = 30 + rng() * 40;
+          const me = tA.copy(playerPos).normalize();
+          for (let i = 0; i < 20; i++) {
+            const spot = around(me, 16);
+            if (spot.distanceTo(me) * R > 7 && isLand(spot, 0.2) && terrain.radiusAt(spot) - WR < 3) { fl.mode = 'land'; fl.t = 0; fl.spot = spot; break; }
+          }
+        }
+      } else if (fl.mode === 'land' && fl.t > 12) { fl.mode = 'fly'; fl.t = 0; }
+      if (fl.mode === 'land') { // 누가 다가오면 바로 날아오름
+        for (const p of threats()) if (p.distanceTo(tA.copy(fl.spot).multiplyScalar(R)) < 4.5) { fl.mode = 'fly'; fl.t = 0; if (audio) audio.fx('flutter', 0.4); break; }
+      }
+    }
+    function birdPos(b, time, out, fwd) {
+      const fl = b.fl, a = fl.phase + fl.w * time + b.i * 0.35;
+      const s = Math.sin(fl.rho), c = Math.cos(fl.rho);
+      const d = tA.copy(fl.center).multiplyScalar(c).addScaledVector(fl.e1, Math.cos(a) * s).addScaledVector(fl.e2, Math.sin(a) * s).normalize();
+      fwd.copy(fl.e1).multiplyScalar(-Math.sin(a)).addScaledVector(fl.e2, Math.cos(a)).multiplyScalar(Math.sign(fl.w)).projectOnPlane(d).normalize();
+      const F = tangentFrame(d);
+      out.copy(d).multiplyScalar(Math.max(terrain.radiusAt(d), WR) + fl.alt + b.off.y + Math.sin(time * 1.3 + b.i) * 0.4)
+        .addScaledVector(F.e, b.off.x).addScaledVector(F.n, b.off.z);
+      return out;
+    }
+
+    let checkT = 0;
+    return {
+      set lure(d) { lure = d ? d.clone() : null; if (!lure) for (const f of fish) f.lured = false; else { let best = null, bd = 6 / R; for (const f of fish) { f.lured = false; const dd = f.dir.distanceTo(lure); if (dd < bd) { bd = dd; best = f; } } if (best) best.lured = true; } },
+      get counts() { return { squirrel: walkers.filter((w) => w.kind === 'squirrel').length, rabbit: walkers.filter((w) => w.kind === 'rabbit').length, fish: fish.length, bird: birds.length }; },
+      debug: { walkers, fish, flocks, birds },
+      update(dt, time) {
+        const pp = player.anchor.position, th = threats();
+        const view = rig.t > 0.3; // 행성 보기에선 새만 (작아서 안 보임)
+        let si = 0, ri = 0;
+        for (const w of walkers) {
+          if (view || w.u < 1) stepWalker(w, dt, th);
+          const g = terrain.radiusAt(w.dir);
+          pos.copy(w.dir).multiplyScalar(g + w.hop);
+          orient(w.dir, w.heading, q);
+          q.multiply(q2.setFromAxisAngle(X, w.pitch));
+          m4.compose(pos, q, sc.set(1, 1, 1));
+          if (w.kind === 'squirrel') squirrelMesh.setMatrixAt(si++, m4); else rabbitMesh.setMatrixAt(ri++, m4);
+        }
+        squirrelMesh.instanceMatrix.needsUpdate = true;
+        rabbitMesh.instanceMatrix.needsUpdate = true;
+        fish.forEach((f, i) => {
+          stepFish(f, dt, time, pp);
+          let r = WR - f.depth, pitch = 0;
+          if (f.jump) { const u = f.jump.t / f.jump.dur; r = WR + Math.sin(Math.PI * u) * 1.1 - 0.2; pitch = mix(-0.9, 0.9, u); }
+          pos.copy(f.dir).multiplyScalar(r);
+          orient(f.dir, f.heading, q);
+          q.multiply(q2.setFromAxisAngle(Yv, 0.28 * Math.sin(time * 9 + f.phase))).multiply(tmpQ.setFromAxisAngle(X, pitch)); // 꼬리 흔들며 헤엄
+          fishMesh.setMatrixAt(i, m4.compose(pos, q, sc.setScalar(f.size)));
+        });
+        fishMesh.instanceMatrix.needsUpdate = true;
+        for (const fl of flocks) stepFlock(fl, dt, time, pp);
+        birds.forEach((b, i) => {
+          const fl = b.fl;
+          const air = birdPos(b, time, pos, b.fwd);
+          let flap = Math.sin(time * 17 + b.flap) * 0.9;
+          if (fl.mode === 'land') { // 내려와서 콕콕 쪼기
+            const k = smoothstep(0, 3, fl.t);
+            if (!b.ground) b.ground = around(fl.spot, 1.6);
+            const g = tA.copy(b.ground).multiplyScalar(terrain.radiusAt(b.ground));
+            b.pos.copy(air).lerp(g, k);
+            b.peck = k >= 1 ? Math.max(0, Math.sin(time * 6 + b.flap * 3)) : 0;
+            if (k >= 1) flap = -1.25; else flap = mix(flap, 0.6, k); // 앉으면 날개 접음
+            b.fwd.projectOnPlane(tB.copy(b.pos).normalize()).normalize();
+          } else {
+            const k = fl.t < 2.5 && b.ground ? smoothstep(0, 2.5, fl.t) : 1;
+            if (b.ground && k < 1) b.pos.copy(tA.copy(b.ground).multiplyScalar(terrain.radiusAt(b.ground))).lerp(air, k);
+            else { b.pos.copy(air); b.ground = null; }
+            b.peck = 0;
+          }
+          const up = tB.copy(b.pos).normalize();
+          orient(up, b.fwd, q);
+          if (b.peck) q.multiply(q2.setFromAxisAngle(X, 0.5 * b.peck));
+          birdMesh.setMatrixAt(i, m4.compose(b.pos, q, sc.set(1, 1, 1)));
+          [1, -1].forEach((sd, j) => { // 날개: 몸통 옆 경첩에서 퍼덕 (왼쪽은 뒤집지 않고 반 바퀴 돌려서, 면이 안 뒤집히게)
+            q2.setFromAxisAngle(Zv, flap);
+            if (sd < 0) q2.premultiply(yawPi);
+            mW.compose(pos.set(sd * 0.06, 0.03, 0), q2, sc.set(1, 1, 1));
+            wingMesh.setMatrixAt(i * 2 + j, m4.compose(b.pos, q, sc.set(1, 1, 1)).multiply(mW));
+          });
+        });
+        birdMesh.instanceMatrix.needsUpdate = true;
+        wingMesh.instanceMatrix.needsUpdate = true;
+        checkT += dt;
+      },
+    };
+  }
+  const tmpQ = new THREE.Quaternion();
+  // ═══════════════════════════════════════════════
+  // 16-4. WORLD — 함께 짓는 것들: 집 · 텐트 · 밭(여섯 칸) · 모닥불
+  //    혼자일 땐 이 기기에 저장. 방에선 서버가 가진 방 세계를 모두가 같이 봄 (방을 만든 사람 기기에도 저장)
+  //    바뀜은 모두 op 하나로: place · remove · crop · harvest · reset
+  // ═══════════════════════════════════════════════
+  const WORLD_KINDS = {
+    house: { name: '집', r: 2.3, col: [1.95, 3.4], limit: 10 },
+    tent: { name: '텐트', r: 1.5, col: [1.25, 1.9], limit: 8 },
+    field: { name: '밭', r: 2.0, col: null, limit: 12 },
+    fire: { name: '모닥불', r: 2.2, col: [0.6, 0.7], limit: 6 },
+  };
+  const CROPS = [
+    { name: '당근', dur: 60, color: '#f08a2e' },
+    { name: '토마토', dur: 90, color: '#e2452f' },
+    { name: '옥수수', dur: 120, color: '#f2cf3a' },
+    { name: '호박', dur: 150, color: '#e9892b' },
+  ];
+  const josa = (w, a, b) => ((w.charCodeAt(w.length - 1) - 0xac00) % 28 ? a : b); // 받침 있으면 a (은/는, 을/를, 이/가)
+
+  function createWorld() {
+    const KEY = 'season-planet-world-v1', OWNED = 'season-planet-owned-rooms';
+    const TOTAL = 36, R = CONFIG.planet.radius, WR = terrain.waterRadius;
+    const HOUSE = [[0xf6ead8, 0xc0533d], [0xdcecf5, 0x3f6f9e], [0xf7dfe6, 0x8e4e7a], [0xe3f2e1, 0x4f7f5a], [0xfff1c9, 0xb4672e], [0xe9e3f7, 0x5b4f94]];
+    const TENT = [0xf08a4b, 0x5bb08a, 0x5b8fd9, 0xe0c24a, 0xd9667a, 0x9b7ad6];
+    const SLOT = [[-1.0, -0.5], [0, -0.5], [1.0, -0.5], [-1.0, 0.5], [0, 0.5], [1.0, 0.5]]; // 밭 여섯 칸 (x, z)
+    const mat = addNearFade(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
+    const dryMat = addNearFade(new THREE.MeshStandardMaterial({ color: 0x6f4c33, flatShading: true, roughness: 1 }));
+    const wetMat = addNearFade(new THREE.MeshStandardMaterial({ color: 0x46301f, flatShading: true, roughness: 0.6 }));
+    const flameMats = [0xff7a1f, 0xffb43a, 0xffe07a].map((c) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const glowMat = new THREE.SpriteMaterial({ map: createGlowTexture([[0, 'rgba(255,200,110,0.95)'], [0.35, 'rgba(255,130,50,0.35)'], [1, 'rgba(255,90,20,0)']]), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    // 땅에 비친 불빛: 진짜 빛 대신 바닥에 깐 따뜻한 무늬 (휴대폰에서 모든 표면의 빛 계산이 늘지 않게)
+    const poolTex = createGlowTexture([[0, 'rgba(255,170,80,0.85)'], [0.3, 'rgba(255,120,40,0.4)'], [0.65, 'rgba(255,90,30,0.12)'], [1, 'rgba(255,80,20,0)']]);
+    const poolGeo = new THREE.PlaneGeometry(6, 6);
+    const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const shade = (hex, k) => new THREE.Color(hex).multiplyScalar(k).getHex();
+    const cache = new Map();
+    const cached = (key, make) => { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); };
+
+    // ── 모양 (앞 = +z) ──
+    const houseGeo = (c) => cached('h' + c, () => {
+      const [wall, roof] = HOUSE[c % HOUSE.length];
+      return mergeParts([
+        P(B(3.0, 2.3, 2.6), wall, [0, 0.8, 0]), // 벽 (땅속 0.35까지 묻힘: 비탈에서도 뜨지 않게)
+        P(prismGeo(3.5, 1.35, 3.1), roof, [0, 1.95, 0]), P(B(3.56, 0.14, 0.14), shade(roof, 0.75), [0, 3.3, 0]),
+        P(B(0.72, 1.25, 0.08), 0x6b4530, [0.62, 0.3, 1.31]), P(B(0.08, 0.08, 0.05), 0xf2c94c, [0.88, 0.32, 1.37]),
+        P(B(0.64, 0.58, 0.06), 0xffe7a3, [-0.72, 0.95, 1.31]), P(B(0.78, 0.08, 0.1), 0xffffff, [-0.72, 1.28, 1.32]), P(B(0.78, 0.08, 0.1), 0xffffff, [-0.72, 0.62, 1.32]),
+        P(B(0.06, 0.58, 0.64), 0xffe7a3, [1.51, 0.95, -0.2]), P(B(0.36, 1.0, 0.36), 0xa0533f, [-0.95, 2.75, -0.55]),
+        P(B(1.0, 0.14, 0.6), 0x9c7a55, [0.62, -0.3, 1.58]),
+      ]);
+    });
+    const tentGeo = (c) => cached('t' + c, () => mergeParts([
+      P(prismGeo(2.6, 1.75, 2.4), TENT[c % TENT.length], [0, -0.05, 0], [0, Math.PI / 2, 0]),
+      P(prismGeo(0.03, 1.2, 1.3), 0x2d2433, [0, -0.05, 1.31], [0, Math.PI / 2, 0]),
+      P(B(0.06, 1.9, 0.06), 0x7a5536, [0, 0.9, 1.34]), P(B(0.06, 1.9, 0.06), 0x7a5536, [0, 0.9, -1.34]),
+    ]));
+    const fieldGeo = () => cached('field', () => mergeParts([
+      P(B(3.3, 0.24, 2.3), 0x7a5536, [0, -0.04, 0]),
+      P(B(3.56, 0.2, 0.15), 0x9c7a55, [0, 0.03, 1.22]), P(B(3.56, 0.2, 0.15), 0x9c7a55, [0, 0.03, -1.22]),
+      P(B(0.15, 0.2, 2.3), 0x9c7a55, [1.72, 0.03, 0]), P(B(0.15, 0.2, 2.3), 0x9c7a55, [-1.72, 0.03, 0]),
+    ]));
+    const moundGeo = new THREE.BoxGeometry(0.84, 0.1, 0.84);
+    const fireGeo = () => cached('fire', () => {
+      const parts = [];
+      for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2; parts.push(P(new THREE.DodecahedronGeometry(0.16, 0), i % 2 ? 0x8d8a86 : 0xaaa6a0, [Math.cos(a) * 0.56, 0.05, Math.sin(a) * 0.56], [a, a * 2, 0], [1, 0.75, 1])); }
+      for (let i = 0; i < 3; i++) parts.push(P(new THREE.CylinderGeometry(0.07, 0.08, 0.95, 6), i % 2 ? 0x6e4527 : 0x7f5230, [0, 0.1 + i * 0.05, 0], [0, (i * Math.PI) / 3, Math.PI / 2]));
+      parts.push(P(B(0.3, 0.06, 0.3), 0x2a1d17, [0, 0.03, 0]));
+      return mergeParts(parts);
+    });
+    const flameGeo = new THREE.ConeGeometry(0.2, 0.72, 5);
+    function cropGeo(s, stage) {
+      return cached(`c${s}-${stage}`, () => {
+        const G = 0x4f9a3c, G2 = 0x6cc04a, parts = [];
+        if (stage === 0) parts.push(P(B(0.24, 0.05, 0.24), 0x5a3d28, [0, 0.07, 0]), P(B(0.05, 0.03, 0.05), 0xe8d6a8, [0.05, 0.1, 0.03]));
+        else if (stage === 1) parts.push(P(B(0.03, 0.14, 0.03), G, [0, 0.12, 0]), P(B(0.13, 0.02, 0.06), G2, [0.06, 0.19, 0], [0, 0, 0.4]), P(B(0.13, 0.02, 0.06), G2, [-0.06, 0.19, 0], [0, 0, -0.4]));
+        else if (stage === 2) for (let i = 0; i < 4; i++) { const a = (i * Math.PI) / 2 + 0.4; parts.push(P(B(0.08, 0.32, 0.14), i % 2 ? G : G2, [Math.sin(a) * 0.08, 0.2, Math.cos(a) * 0.08], [Math.cos(a) * 0.35, 0, -Math.sin(a) * 0.35])); }
+        else if (s === 0) { // 당근: 무성한 잎 + 땅 위로 보이는 주황 머리
+          parts.push(P(B(0.17, 0.13, 0.17), 0xf08a2e, [0, 0.1, 0]));
+          for (let i = 0; i < 5; i++) { const a = i * 1.26; parts.push(P(B(0.05, 0.44, 0.05), i % 2 ? G : G2, [Math.sin(a) * 0.06, 0.36, Math.cos(a) * 0.06], [Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3])); }
+        } else if (s === 1) { // 토마토: 덤불 + 빨간 열매
+          parts.push(P(B(0.42, 0.44, 0.42), G, [0, 0.29, 0]), P(B(0.3, 0.2, 0.3), G2, [0, 0.58, 0]));
+          for (const [x, y, z] of [[0.21, 0.3, 0.1], [-0.19, 0.42, 0.12], [0.05, 0.23, -0.22], [-0.1, 0.52, -0.16], [0.16, 0.52, -0.05]]) parts.push(P(B(0.14, 0.14, 0.14), 0xe2452f, [x, y, z]));
+        } else if (s === 2) { // 옥수수: 키 큰 줄기 + 노란 알
+          parts.push(P(B(0.08, 1.15, 0.08), G, [0, 0.62, 0]));
+          for (const [x, y, r] of [[0.15, 0.5, 0.6], [-0.15, 0.8, -0.6], [0.12, 1.02, 2.2]]) parts.push(P(B(0.4, 0.04, 0.1), G2, [x, y, 0], [0, r, x > 0 ? -0.5 : 0.5]));
+          parts.push(P(B(0.13, 0.28, 0.13), 0xf2cf3a, [0.1, 0.74, 0.03]), P(B(0.15, 0.12, 0.15), G2, [0.1, 0.57, 0.03]));
+        } else { // 호박: 납작한 주황 공 + 꼭지 + 넝쿨 잎
+          parts.push(P(new THREE.DodecahedronGeometry(0.27, 0), 0xe9892b, [0, 0.2, 0], [0, 0, 0], [1.25, 0.82, 1.25]), P(B(0.05, 0.13, 0.05), 0x5a7a2e, [0, 0.44, 0]));
+          parts.push(P(B(0.3, 0.03, 0.2), G, [0.32, 0.07, 0.15], [0, 0.6, 0]), P(B(0.26, 0.03, 0.18), G2, [-0.3, 0.07, -0.18], [0, -0.4, 0]));
+        }
+        return mergeParts(parts);
+      });
+    }
+
+    // ── 저장 · 검사 ──
+    const emptyCrop = () => ({ s: -1, t: 0, wt: 0 });
+    const cleanCrop = (c) => (!c || !Number.isInteger(c.s) || c.s < 0 || c.s >= CROPS.length ? emptyCrop() : { s: c.s, t: Number(c.t) || 0, wt: Number(c.wt) || 0 });
+    function clean(it) {
+      if (!it || typeof it !== 'object' || !WORLD_KINDS[it.k] || typeof it.id !== 'string' || it.id.length > 24) return null;
+      if (!Array.isArray(it.d) || it.d.length !== 3 || !it.d.every(Number.isFinite)) return null;
+      const v = new THREE.Vector3(...it.d);
+      if (v.lengthSq() < 0.5) return null;
+      v.normalize();
+      const out = { id: it.id, k: it.k, d: [v.x, v.y, v.z], r: Number.isFinite(it.r) ? it.r : 0, c: clamp(it.c | 0, 0, 7), t: Number(it.t) || 0 };
+      if (it.k === 'field') out.crops = Array.from({ length: 6 }, (_, i) => cleanCrop(Array.isArray(it.crops) ? it.crops[i] : null));
+      return out;
+    }
+    const rid = () => Math.random().toString(36).slice(2, 10);
+    let local = [];
+    try { const d = JSON.parse(localStorage.getItem(KEY) || '[]'); if (Array.isArray(d)) local = d.map(clean).filter(Boolean).slice(0, TOTAL); } catch (e) { /* 새 세계 */ }
+    let mode = 'local', offset = 0, ownRoom = false;
+    const now = () => Date.now() + offset;
+    const live = new Map(); // id → { it, v(방향), group, collider, slots, flames, glow }
+    const on = { change: null, harvest: null, placed: null };
+    const itemsNow = () => [...live.values()].map((e) => ({ ...e.it, crops: e.it.crops ? e.it.crops.map((c) => ({ ...c })) : undefined }));
+    function saveLocal() {
+      local = itemsNow();
+      try { localStorage.setItem(KEY, JSON.stringify(local)); } catch (e) { /* 저장이 안 돼도 계속 */ }
+    }
+    const owned = () => { try { const a = JSON.parse(localStorage.getItem(OWNED) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+
+    // ── 세우기 · 치우기 ──
+    function spawn(it) {
+      const v = new THREE.Vector3(...it.d), g = new THREE.Group(), K = WORLD_KINDS[it.k];
+      g.position.copy(v).multiplyScalar(terrain.radiusAt(v));
+      frameQuat(v, it.r, g.quaternion);
+      const e = { it, v, group: g, collider: null, grow: 0 };
+      if (it.k === 'house') g.add(new THREE.Mesh(houseGeo(it.c), mat));
+      else if (it.k === 'tent') g.add(new THREE.Mesh(tentGeo(it.c), mat));
+      else if (it.k === 'field') {
+        g.add(new THREE.Mesh(fieldGeo(), mat));
+        e.slots = SLOT.map(([x, z]) => {
+          const mound = new THREE.Mesh(moundGeo, dryMat), plant = new THREE.Mesh(cropGeo(0, 0), mat);
+          mound.position.set(x, 0.1, z);
+          plant.position.set(x, 0.1, z);
+          plant.visible = false;
+          g.add(mound, plant);
+          return { mound, plant, stage: -2, pop: 1, x, z };
+        });
+      } else if (it.k === 'fire') {
+        g.add(new THREE.Mesh(fireGeo(), mat));
+        e.flames = [[0, 0, 1], [0.1, 0.06, 0.8], [-0.09, -0.05, 0.75]].map(([x, z, s], i) => { const f = new THREE.Mesh(flameGeo, flameMats[i]); f.position.set(x, 0.42 * s, z); f.scale.setScalar(s); g.add(f); return f; });
+        e.glow = new THREE.Sprite(glowMat);
+        e.glow.position.y = 0.55;
+        e.glow.scale.setScalar(2.4);
+        g.add(e.glow);
+        e.pool = new THREE.Mesh(poolGeo, new THREE.MeshBasicMaterial({ map: poolTex, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+        e.pool.rotation.x = -Math.PI / 2;
+        e.pool.position.y = 0.08;
+        e.pool.renderOrder = 1;
+        e.phase = Math.random() * 6;
+        g.add(e.pool);
+      }
+      if (K.col) e.collider = props.addCollider(v, K.col[0], K.col[1], 'built');
+      scene.add(g);
+      live.set(it.id, e);
+      if (e.slots) refreshField(e);
+      return e;
+    }
+    function despawn(id) {
+      const e = live.get(id);
+      if (!e) return;
+      scene.remove(e.group);
+      if (e.collider) props.removeCollider(e.collider);
+      live.delete(id);
+    }
+    function resetTo(items) {
+      for (const id of [...live.keys()]) despawn(id);
+      for (const it of items || []) { const c = clean(it); if (c && live.size < TOTAL && !live.has(c.id)) spawn(c); }
+    }
+
+    // ── 밭: 자라는 정도 ──
+    function progressOf(c, t = now()) {
+      if (!c || c.s < 0) return -1;
+      const el = (c.wt ? c.wt - c.t + 2 * (t - c.wt) : t - c.t) / 1000; // 물을 준 뒤로는 두 배 빨리
+      return clamp(el / CROPS[c.s].dur, 0, 1);
+    }
+    const stageOf = (p) => (p < 0 ? -1 : p >= 1 ? 3 : p >= 0.55 ? 2 : p >= 0.18 ? 1 : 0);
+    function refreshField(e) {
+      const t = now();
+      e.it.crops.forEach((c, i) => {
+        const sl = e.slots[i], st = stageOf(progressOf(c, t));
+        sl.mound.material = c.s >= 0 && c.wt ? wetMat : dryMat;
+        if (st === sl.stage) return;
+        sl.stage = st;
+        sl.plant.visible = st >= 0;
+        if (st >= 0) { sl.plant.geometry = cropGeo(c.s, st); sl.pop = 0; }
+      });
+    }
+
+    // ── 바뀜 적용 (혼자든 방이든 같은 길) ──
+    function applyOp(op) {
+      if (!op || typeof op !== 'object') return;
+      if (op.o === 'place') {
+        const c = clean(op.item);
+        if (!c || live.has(c.id) || live.size >= TOTAL) return;
+        const e = spawn(c);
+        e.grow = 0.001; // 쑥 솟아오르며 생김
+        if (on.placed) on.placed(e, op);
+      } else if (op.o === 'remove') despawn(op.id);
+      else if (op.o === 'crop' || op.o === 'harvest') {
+        const e = live.get(op.id), slot = op.slot | 0;
+        if (!e || e.it.k !== 'field' || slot < 0 || slot > 5) return;
+        e.it.crops[slot] = op.o === 'crop' ? cleanCrop(op.crop) : emptyCrop();
+        refreshField(e);
+        if (op.o === 'harvest' && on.harvest) on.harvest(op, e, slot);
+      } else if (op.o === 'reset') resetTo(op.items);
+      if (mode === 'local' || ownRoom) saveLocal();
+      if (on.change) on.change(op);
+    }
+
+    // ── 하고 싶은 일 (혼자면 바로, 방이면 서버를 거쳐 모두에게) ──
+    function act(op) {
+      if (mode === 'room') { net.act(op); return true; }
+      const t = Date.now(), e = op.id ? live.get(op.id) : null, c = e && e.it.crops ? e.it.crops[op.slot | 0] : null;
+      if (op.o === 'place') {
+        if (!canCount(op.k).ok) return false;
+        applyOp({ o: 'place', item: { id: rid(), k: op.k, d: op.d, r: op.r, c: op.c, t, crops: op.k === 'field' ? Array.from({ length: 6 }, emptyCrop) : undefined } });
+      } else if (op.o === 'remove') { if (!e) return false; applyOp({ o: 'remove', id: op.id }); }
+      else if (op.o === 'plant') { if (!c || c.s >= 0) return false; applyOp({ o: 'crop', id: op.id, slot: op.slot, crop: { s: op.s, t, wt: 0 } }); }
+      else if (op.o === 'water') { if (!c || c.s < 0 || c.wt || progressOf(c, t) >= 1) return false; applyOp({ o: 'crop', id: op.id, slot: op.slot, crop: { ...c, wt: t } }); }
+      else if (op.o === 'harvest') { if (!c || progressOf(c, t) < 1) return false; applyOp({ o: 'harvest', id: op.id, slot: op.slot, s: c.s, by: 'me' }); }
+      return true;
+    }
+    const countOf = (k) => [...live.values()].filter((e) => e.it.k === k).length;
+    function canCount(k) {
+      const K = WORLD_KINDS[k];
+      if (countOf(k) >= K.limit) return { ok: false, why: `${K.name}${josa(K.name, '은', '는')} ${K.limit}개까지 지을 수 있어요` };
+      if (live.size >= TOTAL) return { ok: false, why: `이 세계엔 ${TOTAL}개까지 지을 수 있어요` };
+      return { ok: true };
+    }
+    const nrm = new THREE.Vector3(), spawnDir = new THREE.Vector3().fromArray(CONFIG.character.spawn).normalize(), tmp = new THREE.Vector3();
+    function canPlace(k, d) {
+      const K = WORLD_KINDS[k], cnt = canCount(k);
+      if (!cnt.ok) return cnt;
+      const g = terrain.radiusAt(d, nrm);
+      if (g < WR + 0.08) return { ok: false, why: '물 위에는 지을 수 없어요' };
+      if (nrm.dot(d) < 0.88) return { ok: false, why: '땅이 너무 가팔라요' };
+      const F = tangentFrame(d);
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const edge = tmp.copy(d).addScaledVector(F.e, (a * K.r * 0.75) / R).addScaledVector(F.n, (b * K.r * 0.75) / R).normalize();
+        const ge = terrain.radiusAt(edge);
+        if (ge < WR + 0.02) return { ok: false, why: '물가에 너무 가까워요' };
+        if (Math.abs(ge - g) > 0.55) return { ok: false, why: '땅이 너무 울퉁불퉁해요' };
+      }
+      if (d.angleTo(spawnDir) * R < 3.5) return { ok: false, why: '처음 서는 자리는 비워 둘게요' };
+      for (const e of live.values()) if (e.v.angleTo(d) * R < K.r + WORLD_KINDS[e.it.k].r) return { ok: false, why: '다른 것과 너무 가까워요' };
+      for (const c of props.debug.colliders) if (c.key !== 'built' && c.up.angleTo(d) * R < K.r * 0.8 + c.r) return { ok: false, why: c.key === 'friend' ? '주민이 서 있는 자리예요' : '나무나 바위가 걸려요' };
+      for (const gm of gems.list) if (!gm.taken && gm.up.angleTo(d) * R < K.r + 0.6) return { ok: false, why: '보석이 있는 자리예요' };
+      return { ok: true };
+    }
+
+    // ── 방 ↔ 혼자 ──
+    function useRoom(items, serverNow, fresh, code) {
+      mode = 'room';
+      offset = Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
+      ownRoom = owned().includes(code);
+      resetTo(items);
+      if (fresh && ownRoom && local.length) net.seed(local); // 서버가 새로 켜져 방 세계를 잃었으면 내 기기에 있던 걸 다시 올림 (서버가 합침)
+      if (on.change) on.change({ o: 'reset' });
+    }
+    function useLocal() {
+      if (mode === 'local') return;
+      mode = 'local';
+      offset = 0;
+      ownRoom = false;
+      resetTo(local);
+      if (on.change) on.change({ o: 'reset' });
+    }
+    resetTo(local);
+
+    let fieldWait = 0;
+    const lp = new THREE.Vector3();
+    return {
+      live, on, act, canPlace, canCount, progressOf, stageOf, now, spawnDir,
+      previewGeo: (k, c) => (k === 'house' ? houseGeo(c) : k === 'tent' ? tentGeo(c) : k === 'field' ? fieldGeo() : fireGeo()),
+      get mode() { return mode; }, get ownRoom() { return ownRoom; },
+      localItems: () => local.slice(),
+      items: itemsNow,
+      useRoom, useLocal, applyOp,
+      remember(code) { try { const a = owned().filter((c) => c !== code); a.unshift(code); localStorage.setItem(OWNED, JSON.stringify(a.slice(0, 6))); } catch (e) { /* 괜찮음 */ } },
+      frameQuat,
+      nearest(kind, pos, maxD) { let best = null, bd = maxD; for (const e of live.values()) { if (kind && e.it.k !== kind) continue; const d = e.group.position.distanceTo(pos); if (d < bd) { bd = d; best = e; } } return best; },
+      slotNear(pos, maxD = 1.5) { // 가장 가까운 밭 칸
+        let best = null, bd = maxD;
+        for (const e of live.values()) {
+          if (e.it.k !== 'field' || e.group.position.distanceTo(pos) > 4) continue;
+          e.slots.forEach((sl, i) => { const w = e.group.localToWorld(lp.set(sl.x, 0.1, sl.z)); const d = w.distanceTo(pos); if (d < bd) { bd = d; best = { e, slot: i, crop: e.it.crops[i], at: w.clone() }; } });
+        }
+        return best;
+      },
+      update(dt, time) {
+        const pp = player.anchor.position;
+        let nearFire = null, nf = 9;
+        for (const e of live.values()) {
+          if (e.grow > 0 && e.grow < 1) { e.grow = Math.min(1, e.grow + dt * 2.2); const s = 1 - Math.pow(1 - e.grow, 3); e.group.scale.set(1, 0.05 + 0.95 * s, 1); }
+          if (e.flames) {
+            e.flames.forEach((f, i) => { const k = [1, 0.8, 0.75][i]; f.scale.set(k * (1 + 0.12 * Math.sin(time * 13 + i * 2)), k * (1 + 0.28 * Math.sin(time * 9.3 + i * 1.7) + 0.12 * Math.sin(time * 23 + i)), k); f.rotation.y = time * (0.6 + i * 0.3); });
+            e.glow.material.opacity = 0.85 + 0.15 * Math.sin(time * 11);
+            e.pool.material.opacity = 0.5 + 0.12 * Math.sin(time * 10.5 + e.phase) + 0.06 * Math.sin(time * 23 + e.phase * 2);
+            const d = e.group.position.distanceTo(pp);
+            if (d < nf) { nf = d; nearFire = e; }
+          }
+          if (e.slots) for (const sl of e.slots) {
+            if (sl.pop < 1) { sl.pop = Math.min(1, sl.pop + dt * 3); const s = 0.3 + 0.7 * (1 - Math.pow(1 - sl.pop, 3)); sl.plant.scale.setScalar(s); }
+            else if (sl.stage === 3) sl.plant.scale.set(1, 1 + 0.05 * Math.sin(time * 3 + sl.x * 2), 1); // 다 자라면 살랑
+          }
+        }
+        if (nearFire && audio && nf < 9 && Math.random() < dt * 7) audio.fx('crackle', 0.5 * (1 - nf / 9)); // 타닥타닥
+        fieldWait -= dt;
+        if (fieldWait <= 0) { fieldWait = 0.5; for (const e of live.values()) if (e.slots) refreshField(e); }
+      },
+    };
+  }
+  // ═══════════════════════════════════════════════
+  // 16-5. LIFE — 낚시 · 농사 · 가방(먹기 · 굽기 · 나눠 주기) · 모닥불(앉기 · 기타 · 노래) · 짓기
+  //    친구에겐 지금 하는 일(ac)과 준 선물(gf)을 각자 상태로 알림
+  // ═══════════════════════════════════════════════
+  const SONGS = [ // 직접 지은 짧은 가락 (흔한 화음 진행 위에)
+    { name: '모닥불 노래', bpm: 92, beats: 4, chords: ['C', 'G', 'Am', 'F'],
+      mel: [[0, 64, 1], [1, 67, 1], [2, 67, 0.5], [2.5, 69, 0.5], [3, 67, 1], [4, 62, 1], [5, 67, 1], [6, 71, 1], [7, 69, 1], [8, 72, 1.5], [9.5, 71, 0.5], [10, 69, 1], [11, 64, 1], [12, 65, 1], [13, 69, 1], [14, 67, 2]] },
+    { name: '별빛 왈츠', bpm: 108, beats: 3, chords: ['Am', 'F', 'C', 'G'],
+      mel: [[0, 69, 2], [2, 72, 1], [3, 69, 1.5], [4.5, 67, 0.5], [5, 65, 1], [6, 64, 2], [8, 67, 1], [9, 62, 1], [10, 64, 1], [11, 67, 1]] },
+  ];
+  const CHORD = {
+    C: [130.81, 164.81, 196.0, 261.63, 329.63], G: [98.0, 123.47, 146.83, 196.0, 246.94, 392.0],
+    Am: [110.0, 164.81, 220.0, 261.63, 329.63], F: [87.31, 174.61, 220.0, 261.63, 349.23],
+  };
+  const ACT_KINDS = ['sit', 'fish', 'guitar', 'sing', 'eat'];
+
+  function createLife() {
+    const R = CONFIG.planet.radius, WR = terrain.waterRadius;
+    const FISH = [{ name: '피라미', color: '#f3b8c4' }, { name: '붕어', color: '#f2a33c' }, { name: '연어', color: '#d9574a' }, { name: '빙어', color: '#9fc4e0' }];
+    const ITEMS = {};
+    FISH.forEach((f, i) => { ITEMS['f' + i] = { name: f.name, color: f.color, kind: 'fish' }; });
+    CROPS.forEach((c, i) => { ITEMS['c' + i] = { name: c.name, color: c.color, kind: 'crop' }; });
+    ITEMS.gf = { name: '구운 생선', color: '#c98a4b', kind: 'cooked' };
+    ITEMS.gv = { name: '채소 꼬치', color: '#8fbf5a', kind: 'cooked' };
+    const ORDER = ['gf', 'gv', 'c0', 'c1', 'c2', 'c3', 'f0', 'f1', 'f2', 'f3'];
+    const obj = (w, k) => w + josa(w, k[0], k[1]); // 을/를 · 은/는 · 이/가 붙이기
+
+    // ── 가방 (이 기기에 저장) ──
+    const BAG_KEY = 'season-planet-bag-v1';
+    const bag = {};
+    try { const d = JSON.parse(localStorage.getItem(BAG_KEY) || '{}'); for (const k of ORDER) bag[k] = clamp(d[k] | 0, 0, 999); } catch (e) { for (const k of ORDER) bag[k] = 0; }
+    const saveBag = () => { try { localStorage.setItem(BAG_KEY, JSON.stringify(bag)); } catch (e) { /* 괜찮음 */ } };
+    const addItem = (k, n = 1) => { bag[k] = clamp((bag[k] || 0) + n, 0, 999); saveBag(); bagDirty = true; };
+    const takeItem = (k) => { if (!bag[k]) return false; bag[k]--; saveBag(); bagDirty = true; return true; };
+
+    // ── 화면 ──
+    const ctxBtn = $('ctx'), toastEl = $('toast'), bagBtn = $('bag-btn'), bagCount = $('bag-count'), bagPanel = $('bag'), bagList = $('bag-list'), bagNote = $('bag-note');
+    const buildBtn = $('build-btn'), buildMenu = $('build-menu'), buildBar = $('build-bar'), buildWhy = $('build-why'), buildOk = $('build-ok'), buildColor = $('build-color'), buildRotate = $('build-rotate');
+    const seedsPanel = $('seeds'), seedGrid = $('seed-grid'), campBar = $('camp-bar'), campGuitar = $('camp-guitar'), campSing = $('camp-sing'), campSong = $('camp-song');
+    let toastT = 0;
+    function toast(text) { toastEl.textContent = text; toastEl.classList.add('show'); toastT = 2.4; }
+    const sheets = [bagPanel, buildMenu, seedsPanel];
+    function closeSheets(except) { for (const s of sheets) if (s !== except) s.hidden = true; }
+    const vec3 = (a) => (Array.isArray(a) && a.length === 3 && a.every(Number.isFinite) ? a : null);
+    const r4 = (v) => Math.round(v * 1e4) / 1e4;
+    const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3(), camRight = new THREE.Vector3();
+
+    // ── 지금 하는 일 (내 캐릭터 자세 + 친구에게 알림) ──
+    let act = null, fishing = null, seated = null, eating = null, eatSeq = 0, giftSeq = 0, boostLeft = 0, bagDirty = true, song = 0;
+    const gifts = [];
+    function setAct(a) { act = a ? { t: 0, cast: 1, ...a } : null; character.activity = act; }
+
+    // ── 손에 드는 것: 낚싯대 · 기타 · 먹을 것 (내 캐릭터와 친구가 같이 씀) ──
+    const propMat = addNearFade(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.7, metalness: 0 }));
+    const BX = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const rodDir = new THREE.Vector3(0, -0.34, 1).normalize();
+    const rodGeo = mergeParts([P(new THREE.CylinderGeometry(0.02, 0.035, 2.3, 5), 0x8a5a35, [0, -0.5 + rodDir.y * 1.15, rodDir.z * 1.15], [Math.atan2(rodDir.z, rodDir.y), 0, 0]), P(BX(0.07, 0.07, 0.12), 0x333333, [0, -0.48, 0.1])]);
+    const guitarGeo = mergeParts([
+      P(new THREE.CylinderGeometry(0.25, 0.25, 0.11, 10), 0xc9803e, [0, 0, 0], [Math.PI / 2, 0, 0]), P(new THREE.CylinderGeometry(0.2, 0.2, 0.11, 10), 0xc9803e, [0.3, 0, 0], [Math.PI / 2, 0, 0]),
+      P(new THREE.CylinderGeometry(0.075, 0.075, 0.02, 8), 0x2b1a12, [0.12, 0, 0.056], [Math.PI / 2, 0, 0]),
+      P(BX(0.72, 0.07, 0.05), 0x5a3a22, [0.78, 0, 0.02]), P(BX(0.15, 0.09, 0.05), 0x3a2416, [1.2, 0, 0.02]),
+      P(BX(0.03, 0.14, 0.03), 0x1e1e1e, [-0.15, 0, 0.06]),
+    ]);
+    const foodGeo = {
+      fish: mergeParts([P(BX(0.09, 0.12, 0.3), 0xc98a4b, [0, 0, 0]), P(BX(0.02, 0.12, 0.08), 0xa86a35, [0, 0, -0.18]), P(BX(0.02, 0.02, 0.5), 0x9c7a55, [0, 0, 0.05])]),
+      veg: mergeParts([P(BX(0.02, 0.02, 0.55), 0x9c7a55, [0, 0, 0.05]), P(BX(0.1, 0.1, 0.1), 0xe2452f, [0, 0, -0.1]), P(BX(0.1, 0.1, 0.1), 0xf2cf3a, [0, 0, 0.03]), P(BX(0.1, 0.1, 0.1), 0x6cc04a, [0, 0, 0.16])]),
+      crop: (hex) => mergeParts([P(BX(0.14, 0.14, 0.14), hex, [0, 0, 0]), P(BX(0.04, 0.08, 0.04), 0x4f9a3c, [0, 0.1, 0])]),
+    };
+    const foodFor = (key) => (key === 'gf' ? foodGeo.fish : key === 'gv' ? foodGeo.veg : foodGeo.crop(new THREE.Color(ITEMS[key] ? ITEMS[key].color : '#e2452f').getHex()));
+    function makeProps(rig) { // rig: { handArm, torso }
+      const rod = new THREE.Mesh(rodGeo, propMat), tip = new THREE.Object3D(), guitar = new THREE.Mesh(guitarGeo, propMat), food = new THREE.Mesh(foodGeo.veg, propMat);
+      tip.position.set(0, -0.5 + rodDir.y * 2.3, rodDir.z * 2.3);
+      rod.add(tip);
+      rig.handArm.add(rod, food);
+      food.position.set(0, -0.56, 0.12);
+      rig.torso.add(guitar);
+      guitar.position.set(-0.1, 0.28, 0.32);
+      guitar.rotation.set(0, 0, 0.42);
+      const bobber = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff4d4d, roughness: 0.5 }));
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 }));
+      line.frustumCulled = false;
+      scene.add(bobber, line);
+      const p = { rod, tip, guitar, food, bobber, line, foodKey: null };
+      showProps(p, null);
+      return p;
+    }
+    function showProps(p, a, bobDir) {
+      const k = a ? a.k : null;
+      p.rod.visible = p.bobber.visible = p.line.visible = k === 'fish';
+      p.guitar.visible = k === 'guitar';
+      p.food.visible = k === 'eat';
+      if (k === 'eat' && a.it !== p.foodKey) { p.foodKey = a.it; p.food.geometry = foodFor(a.it); }
+      p.bobDir = bobDir || null;
+    }
+    function placeBobber(p, bite, time) {
+      if (!p.rod.visible || !p.bobDir) return;
+      const dip = bite ? -0.12 + 0.05 * Math.sin(time * 30) : 0.025 * Math.sin(time * 3);
+      p.bobber.position.copy(p.bobDir).multiplyScalar(WR + 0.04 + dip);
+      p.tip.getWorldPosition(tmp);
+      const pos = p.line.geometry.attributes.position;
+      pos.setXYZ(0, tmp.x, tmp.y, tmp.z);
+      pos.setXYZ(1, p.bobber.position.x, p.bobber.position.y, p.bobber.position.z);
+      pos.needsUpdate = true;
+    }
+    const myProps = makeProps({ handArm: character.parts.arms[1], torso: character.parts.upper });
+
+    // ── 소리: 기타(줄 뜯기 합성) · 노래(모음 합성). 가까울수록 크게 ──
+    const music = (() => {
+      const perf = new Map(); // key → { kind, song, t0, loop, gain, pan, pos() }
+      const ks = new Map();
+      function ksBuf(freq) { // Karplus-Strong: 잡음을 짧은 고리에 돌리며 부드럽게 → 기타 줄 소리
+        const key = Math.round(freq * 10);
+        if (ks.has(key)) return ks.get(key);
+        const ac = audio.ctx, sr = ac.sampleRate, len = Math.floor(sr * 1.8), N = Math.max(2, Math.round(sr / freq));
+        const buf = ac.createBuffer(1, len, sr), out = buf.getChannelData(0), ring = new Float32Array(N);
+        let prev = 0;
+        for (let i = 0; i < N; i++) { prev = ring[i] = 0.55 * (Math.random() * 2 - 1) + 0.45 * prev; }
+        for (let i = 0, idx = 0; i < len; i++) { const nx = idx + 1 === N ? 0 : idx + 1; out[i] = ring[idx]; ring[idx] = 0.4978 * (ring[idx] + ring[nx]); idx = nx; }
+        ks.set(key, buf);
+        return buf;
+      }
+      function pluck(t, freq, vol, dest) {
+        const ac = audio.ctx, src = ac.createBufferSource(), g = ac.createGain();
+        src.buffer = ksBuf(freq);
+        g.gain.setValueAtTime(vol, t);
+        g.gain.setTargetAtTime(0, t + 1.1, 0.18);
+        src.connect(g);
+        g.connect(dest);
+        src.start(t);
+        src.stop(t + 1.8);
+      }
+      function voice(t, freq, dur, vol, dest, vowel) { // '라' / '루'
+        const ac = audio.ctx, o = ac.createOscillator(), vib = ac.createOscillator(), vg = ac.createGain(), g = ac.createGain(), lp = ac.createBiquadFilter();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(freq, t);
+        vib.frequency.value = 5.3;
+        vg.gain.setValueAtTime(0, t);
+        vg.gain.linearRampToValueAtTime(freq * 0.014, t + Math.min(0.35, dur * 0.6));
+        vib.connect(vg);
+        vg.connect(o.frequency);
+        const F = vowel ? [[800, 5, 1], [1150, 7, 0.7]] : [[360, 5, 1], [820, 7, 0.5]];
+        for (const [f, qv, amp] of F) { const bp = ac.createBiquadFilter(), ga = ac.createGain(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = qv; ga.gain.value = amp; o.connect(bp); bp.connect(ga); ga.connect(g); }
+        lp.type = 'lowpass';
+        lp.frequency.value = 3000;
+        const end = t + dur;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.07);
+        g.gain.setValueAtTime(vol, Math.max(t + 0.08, end - 0.05));
+        g.gain.exponentialRampToValueAtTime(0.0001, end + 0.16);
+        g.connect(lp);
+        lp.connect(dest);
+        o.start(t); vib.start(t);
+        o.stop(end + 0.2); vib.stop(end + 0.2);
+      }
+      function loopOf(kind, S) { // 한 바퀴(4마디) 동안의 소리 목록 (박 단위)
+        const ev = [];
+        S.chords.forEach((ch, bar) => {
+          const b0 = bar * S.beats, str = CHORD[ch];
+          if (kind === 'guitar') {
+            const pat = S.beats === 4 ? [[0, 'D'], [1, 'D'], [1.5, 'U'], [2.5, 'U'], [3, 'D'], [3.5, 'U']] : [[0, 'B'], [1, 'D'], [2, 'D']];
+            for (const [b, w] of pat) ev.push({ b: b0 + b, w, str });
+          }
+        });
+        if (kind === 'sing') S.mel.forEach(([b, m, d], i) => ev.push({ b, f: 440 * Math.pow(2, (m - 69) / 12), d, vowel: i % 3 !== 2 }));
+        return ev.sort((a, b) => a.b - b.b);
+      }
+      function start(key, kind, songIdx, posFn) {
+        const ac = audio.ctx;
+        stop(key);
+        if (!ac) return;
+        const S = SONGS[songIdx] || SONGS[0], beat = 60 / S.bpm, bar = S.beats * beat;
+        let t0 = ac.currentTime + 0.12;
+        for (const p of perf.values()) if (p.kind === 'guitar' && p.song === songIdx && p.pos().distanceTo(posFn()) < 16) { t0 = p.t0 + Math.ceil((ac.currentTime + 0.06 - p.t0) / bar) * bar; break; } // 가까운 기타 박자에 맞춤
+        const gain = ac.createGain(), pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+        gain.gain.value = 0;
+        if (pan) { gain.connect(pan); pan.connect(audio.buses.sfx); } else gain.connect(audio.buses.sfx);
+        const send = ac.createGain();
+        send.gain.value = 0.35;
+        gain.connect(send);
+        send.connect(audio.buses.verb);
+        perf.set(key, { kind, song: songIdx, S, beat, t0, ev: loopOf(kind, S), loopBeats: S.chords.length * S.beats, n: 0, gain, pan, send, pos: posFn });
+      }
+      function stop(key) {
+        const p = perf.get(key);
+        if (!p) return;
+        perf.delete(key);
+        if (audio.ctx) p.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.06);
+        setTimeout(() => { p.gain.disconnect(); p.send.disconnect(); if (p.pan) p.pan.disconnect(); }, 900);
+      }
+      let lastNow = 0;
+      function update() {
+        const ac = audio.ctx;
+        if (!ac) { if (perf.size) for (const k of [...perf.keys()]) perf.delete(k); audio.duck(1); return; }
+        const now = ac.currentTime, gap = lastNow ? now - lastNow : 0; // 화면이 느리게 그려지면 그만큼 더 멀리 예약 (끊기지 않게)
+        lastNow = now;
+        const horizon = now + Math.max(0.3, Math.min(2, gap * 1.6 + 0.12));
+        camRight.setFromMatrixColumn(camera.matrixWorld, 0);
+        let near = 0;
+        for (const p of perf.values()) {
+          const pos = p.pos(), d = pos.distanceTo(player.anchor.position), v = clamp(1 - d / 26, 0, 1);
+          near = Math.max(near, v);
+          p.gain.gain.setTargetAtTime(v * v * (p.kind === 'sing' ? 0.9 : 1), now, 0.12);
+          if (p.pan) p.pan.pan.setTargetAtTime(clamp(tmp.copy(pos).sub(camera.position).normalize().dot(camRight), -1, 1) * 0.7, now, 0.12);
+          for (let guard = 0; guard < 64; guard++) { // 앞으로 0.3초 안의 소리를 미리 예약
+            const e = p.ev[p.n % p.ev.length], loop = Math.floor(p.n / p.ev.length);
+            const t = p.t0 + (loop * p.loopBeats + e.b) * p.beat;
+            if (t > horizon) break;
+            p.n++;
+            if (t < now - 0.05) continue;
+            if (p.kind === 'guitar') {
+              if (e.w === 'B') pluck(t, e.str[0], 0.4, p.gain);
+              else { const list = e.w === 'D' ? e.str : e.str.slice(-3).reverse(); list.forEach((f, i) => pluck(t + i * (e.w === 'D' ? 0.013 : 0.01), f, e.w === 'D' ? 0.21 : 0.13, p.gain)); }
+            } else voice(t, e.f, e.d * p.beat * 0.94, 0.36, p.gain, e.vowel);
+          }
+        }
+        audio.duck(1 - 0.75 * near); // 가까이서 연주하면 배경 음악은 작게
+      }
+      const strum = (key) => { const p = perf.get(key), ac = audio.ctx; if (!p || !ac || p.kind !== 'guitar') return 0; const ph = ((ac.currentTime - p.t0) / p.beat) * 2; return ph < 0 ? 0 : Math.max(0, 1 - (ph % 1) * 3); };
+      return { start, stop, update, strum, get count() { return perf.size; }, has: (k) => perf.has(k) };
+    })();
+
+    // ── 낚시 ──
+    function waterAhead() {
+      if (terrain.radiusAt(player.up) < WR - 0.05) return null; // 물속에선 안 됨
+      const axisBase = tmp2.crossVectors(player.up, player.heading).normalize();
+      for (const turn of [0, 0.35, -0.35]) {
+        const h = tmp.copy(player.heading).applyAxisAngle(player.up, turn);
+        const axis = axisBase.crossVectors(player.up, h).normalize();
+        for (const dist of [1.6, 2.4, 3.2, 4.0]) {
+          const d = player.up.clone().applyAxisAngle(axis, dist / R).normalize();
+          if (terrain.radiusAt(d) < WR - 0.18) return d;
+        }
+      }
+      return null;
+    }
+    function startFishing(bob) {
+      closeSheets();
+      player.face(tmp.copy(bob).multiplyScalar(WR).sub(player.anchor.position));
+      fishing = { phase: 'cast', t: 0, bob: bob.clone(), biteIn: 2.2 + Math.random() * 4.5, window: 0, season: terrain.seasonAt(bob) };
+      setAct({ k: 'fish', cast: 0, bite: 0 });
+      showProps(myProps, act, fishing.bob);
+      audio.fx('cast', 0.6);
+    }
+    function stopFishing(quiet) {
+      if (!fishing) return;
+      fishing = null;
+      animals.lure = null;
+      setAct(null);
+      showProps(myProps, null);
+      if (!quiet) audio.fx('reel', 0.4);
+    }
+    function reel() {
+      if (!fishing || fishing.phase !== 'bite') return;
+      const key = 'f' + fishing.season;
+      addItem(key);
+      toast(`${obj(ITEMS[key].name, ['을', '를'])} 낚았어요!`);
+      audio.fx('catch', 0.7);
+      emotes.fxFor('cheer', player.anchor.position, player.up, player.height, 0);
+      stopFishing(true);
+    }
+    function stepFishing(dt) {
+      const f = fishing;
+      f.t += dt;
+      if (player.moving > 0.12) { stopFishing(); return; } // 움직이면 거둠
+      if (f.phase === 'cast' && f.t > 0.55) { f.phase = 'wait'; audio.fx('splash', 0.45); animals.lure = f.bob; }
+      else if (f.phase === 'wait') {
+        f.biteIn -= dt;
+        if (f.biteIn <= 0) { f.phase = 'bite'; f.window = 1.0; act.bite = 1; audio.fx('bite', 0.8); }
+      } else if (f.phase === 'bite') {
+        f.window -= dt;
+        if (f.window <= 0) { f.phase = 'wait'; f.biteIn = 2.5 + Math.random() * 4; act.bite = 0; toast('놓쳤어요. 다시 기다려 봐요'); }
+      }
+    }
+
+    // ── 농사 ──
+    function openSeeds(slot) {
+      closeSheets(seedsPanel);
+      seedGrid.replaceChildren(...CROPS.map((c, s) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'press build-opt';
+        b.style.setProperty('--c', c.color);
+        b.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('small'), { textContent: `${Math.round(c.dur / 60 * 10) / 10}분, 물 주면 두 배 빨리` }));
+        b.addEventListener('click', () => {
+          seedsPanel.hidden = true;
+          if (world.act({ o: 'plant', id: slot.e.it.id, slot: slot.slot, s })) { audio.fx('plant', 0.6); toast(`${obj(c.name, ['을', '를'])} 심었어요`); }
+        });
+        return b;
+      }));
+      seedsPanel.hidden = false;
+    }
+    function water(slot) { if (world.act({ o: 'water', id: slot.e.it.id, slot: slot.slot })) { audio.fx('water', 0.6); toast('물을 줬어요. 이제 두 배 빨리 자라요'); } }
+    function harvest(slot) { world.act({ o: 'harvest', id: slot.e.it.id, slot: slot.slot }); }
+    world.on.harvest = (op) => {
+      const mine = op.by === 'me' || (together && op.by === together.myKey());
+      if (!mine || !CROPS[op.s]) return;
+      addItem('c' + op.s);
+      toast(`${obj(CROPS[op.s].name, ['을', '를'])} 거뒀어요. 가방에 넣었어요`);
+      audio.fx('pop', 0.7);
+    };
+    world.on.placed = (e) => { if (e.group.position.distanceTo(player.anchor.position) < 30) audio.fx('build', 0.6); };
+
+    // ── 모닥불 ──
+    function sitAt(fire) {
+      closeSheets();
+      const fc = fire.group.position, up = fire.v;
+      const away = tmp.copy(player.anchor.position).sub(fc).projectOnPlane(up);
+      if (away.lengthSq() < 1e-4) away.copy(tangentFrame(up).n);
+      away.normalize();
+      const seat = fc.clone().addScaledVector(away, 1.75).normalize();
+      const face = fc.clone().sub(seat.clone().multiplyScalar(fc.length())).projectOnPlane(seat).normalize();
+      player.teleport(seat, face);
+      player.setLocked(true);
+      followView.turnTo(face.clone().applyAxisAngle(seat, 0.6)); // 카메라는 불 건너 비스듬히: 불과 얼굴이 함께 보이게
+      seated = { fire };
+      setAct({ k: 'sit' });
+      showProps(myProps, act);
+      campBar.hidden = false;
+      refreshCamp();
+    }
+    function stand() {
+      if (!seated) return;
+      music.stop('me');
+      seated = null;
+      setAct(null);
+      showProps(myProps, null);
+      player.setLocked(false);
+      campBar.hidden = true;
+    }
+    const nearGuitar = () => { for (const b of together ? together.buddies.values() : []) if (b.act && b.act.k === 'guitar' && b.anchor.position.distanceTo(player.anchor.position) < 16) return b.act.s; return -1; };
+    function playGuitar() {
+      if (!seated) return;
+      if (act && act.k === 'guitar') { music.stop('me'); setAct({ k: 'sit' }); }
+      else { music.stop('me'); setAct({ k: 'guitar', s: song }); music.start('me', 'guitar', song, () => player.anchor.position); if (!audio.enabled) toast('소리가 꺼져 있어요. 위쪽 소리 버튼을 켜 주세요'); }
+      showProps(myProps, act);
+      refreshCamp();
+    }
+    function sing() {
+      if (act && act.k === 'sing') { music.stop('me'); setAct(seated ? { k: 'sit' } : null); }
+      else {
+        const g = nearGuitar(); // 친구가 기타를 치면 그 노래를 따라 부름
+        if (g >= 0) song = g;
+        music.stop('me');
+        setAct({ k: 'sing', s: song, seat: seated ? 1 : 0 });
+        music.start('me', 'sing', song, () => player.anchor.position);
+        emotes.fxFor('dance', player.anchor.position, player.up, player.height, 0);
+      }
+      showProps(myProps, act);
+      refreshCamp();
+    }
+    function nextSong() {
+      song = (song + 1) % SONGS.length;
+      if (act && (act.k === 'guitar' || act.k === 'sing')) { const k = act.k; setAct({ k: 'sit' }); if (k === 'guitar') playGuitar(); else sing(); }
+      refreshCamp();
+    }
+    function refreshCamp() {
+      campGuitar.textContent = act && act.k === 'guitar' ? '기타 멈추기' : '기타 치기';
+      campSing.textContent = act && act.k === 'sing' ? '노래 멈추기' : '노래하기';
+      campSong.textContent = SONGS[song].name;
+      campGuitar.setAttribute('aria-pressed', String(!!(act && act.k === 'guitar')));
+      campSing.setAttribute('aria-pressed', String(!!(act && act.k === 'sing')));
+    }
+    campGuitar.addEventListener('click', playGuitar);
+    campSing.addEventListener('click', sing);
+    campSong.addEventListener('click', nextSong);
+    $('camp-up').addEventListener('click', stand);
+    $('camp-bag').addEventListener('click', () => openBag());
+
+    // ── 가방: 먹기 · 굽기 · 나눠 주기 ──
+    const nearFire = () => !!(seated || world.nearest('fire', player.anchor.position, 3.4));
+    function nearestBuddy(maxD) { let best = null, bd = maxD; if (together) for (const b of together.buddies.values()) { const d = b.anchor.position.distanceTo(player.anchor.position); if (d < bd) { bd = d; best = b; } } return best; }
+    function eat(key) {
+      const it = ITEMS[key];
+      if (!it || !bag[key]) return;
+      if (it.kind === 'fish') { toast('생선은 모닥불에 구워서 먹어요'); return; }
+      if (eating || fishing) return;
+      takeItem(key);
+      eatSeq++;
+      eating = { t: 0, back: act && act.k !== 'eat' ? { ...act, t: 0 } : null };
+      if (act && (act.k === 'guitar' || act.k === 'sing')) { music.stop('me'); eating.back = seated ? { k: 'sit' } : null; }
+      setAct({ k: 'eat', i: eatSeq, it: key, seat: seated ? 1 : 0 });
+      showProps(myProps, act);
+      boostLeft = Math.max(boostLeft, it.kind === 'cooked' ? 60 : 25);
+      toast(`냠냠! ${Math.round(boostLeft)}초 동안 더 빨리 달리고 높이 뛰어요`);
+      closeSheets();
+    }
+    function grill(key) {
+      const it = ITEMS[key];
+      if (!it || !bag[key] || !nearFire()) return;
+      takeItem(key);
+      const out = it.kind === 'fish' ? 'gf' : 'gv';
+      addItem(out);
+      audio.fx('sizzle', 0.7);
+      toast(`${obj(it.name, ['을', '를'])} 구워서 ${ITEMS[out].name}${josa(ITEMS[out].name, '을', '를')} 만들었어요`);
+    }
+    function give(key) {
+      const b = nearestBuddy(6);
+      if (!b || !takeItem(key)) { toast('가까이 있는 친구가 없어요'); return; }
+      giftSeq++;
+      gifts.push({ i: giftSeq, to: b.key, it: key });
+      while (gifts.length > 5) gifts.shift();
+      toast(`${b.name}에게 ${obj(ITEMS[key].name, ['을', '를'])} 줬어요`);
+      emotes.fxFor('heart', b.anchor.position, b.up, b.height, 0.4);
+    }
+    function openBag() {
+      closeSheets(bagPanel);
+      bagPanel.hidden = !bagPanel.hidden;
+      bagDirty = true;
+      renderBag();
+    }
+    function renderBag() {
+      if (bagPanel.hidden || !bagDirty) return;
+      bagDirty = false;
+      const fireNear = nearFire(), buddy = nearestBuddy(6);
+      bagNote.textContent = boostLeft > 0 ? `든든함 ${Math.ceil(boostLeft)}초 남음` : fireNear ? '모닥불 곁: 구울 수 있어요' : buddy ? `${buddy.name}에게 줄 수 있어요` : '';
+      const rows = ORDER.filter((k) => bag[k] > 0).map((k) => {
+        const it = ITEMS[k], row = document.createElement('div');
+        row.className = 'bag-row';
+        row.style.setProperty('--c', it.color);
+        const dot = document.createElement('span'); dot.className = 'jr-dot';
+        const name = document.createElement('span'); name.className = 'bag-name'; name.textContent = it.name;
+        const n = document.createElement('span'); n.className = 'jr-num'; n.textContent = `${bag[k]}개`;
+        row.append(dot, name, n);
+        const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'press bag-act'; b.textContent = label; b.addEventListener('click', () => { fn(k); bagDirty = true; renderBag(); }); row.append(b); };
+        if (it.kind !== 'fish') btn('먹기', eat);
+        if (it.kind !== 'cooked' && fireNear) btn('굽기', grill);
+        if (buddy) btn('주기', give);
+        return row;
+      });
+      if (!rows.length) { const p = document.createElement('p'); p.className = 'lobby-msg'; p.textContent = '가방이 비었어요. 물가에서 낚시하거나 밭에서 거둬 보세요.'; rows.push(p); }
+      bagList.replaceChildren(...rows);
+    }
+    bagBtn.addEventListener('click', openBag);
+    $('bag-close').addEventListener('click', () => { bagPanel.hidden = true; });
+    $('seeds-close').addEventListener('click', () => { seedsPanel.hidden = true; });
+
+    // ── 짓기 ──
+    let build = null; // { k, yaw, c, ghost, check, removeId }
+    const ghostOk = new THREE.MeshBasicMaterial({ color: 0x7dffb0, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
+    const ghostBad = new THREE.MeshBasicMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
+    const ghost = new THREE.Mesh(new THREE.BufferGeometry(), ghostOk);
+    ghost.visible = false;
+    ghost.renderOrder = 3;
+    scene.add(ghost);
+    function openBuild() {
+      if (seated) stand();
+      stopFishing(true);
+      closeSheets(buildMenu);
+      buildMenu.hidden = !buildMenu.hidden;
+      for (const b of buildMenu.querySelectorAll('[data-k]')) { const c = world.canCount(b.dataset.k); b.disabled = !c.ok; b.querySelector('small').textContent = c.ok ? b.dataset.note : c.why; }
+    }
+    function startBuild(k) {
+      buildMenu.hidden = true;
+      build = { k, yaw: 0, c: Math.floor(Math.random() * 6), check: { ok: false, why: '' }, wait: 0, d: new THREE.Vector3() };
+      ghost.geometry = world.previewGeo(k, build.c);
+      ghost.visible = true;
+      buildColor.hidden = !(k === 'house' || k === 'tent');
+      buildRotate.hidden = false;
+      buildOk.textContent = '짓기';
+      buildBar.hidden = false;
+    }
+    function startRemove() {
+      buildMenu.hidden = true;
+      build = { remove: true, check: { ok: false, why: '' }, wait: 0, target: null };
+      buildColor.hidden = buildRotate.hidden = true;
+      buildOk.textContent = '치우기';
+      ghost.material = ghostBad;
+      buildBar.hidden = false;
+    }
+    function endBuild() { build = null; ghost.visible = false; buildBar.hidden = true; }
+    function stepBuild(dt) {
+      build.wait -= dt;
+      if (build.remove) {
+        const e = world.nearest(null, player.anchor.position, 6);
+        build.target = e;
+        if (e) { ghost.geometry = world.previewGeo(e.it.k, e.it.c); ghost.position.copy(e.group.position); ghost.quaternion.copy(e.group.quaternion); ghost.scale.setScalar(1.04); ghost.visible = true; }
+        else ghost.visible = false;
+        buildWhy.textContent = e ? `${WORLD_KINDS[e.it.k].name}${josa(WORLD_KINDS[e.it.k].name, '을', '를')} 치울까요?` : '치울 것 가까이 가 보세요';
+        buildOk.disabled = !e;
+        return;
+      }
+      const dist = build.k === 'house' ? 4.4 : build.k === 'fire' ? 3.2 : 3.6;
+      const axis = tmp.crossVectors(player.up, player.heading).normalize();
+      build.d.copy(player.up).applyAxisAngle(axis, dist / R).normalize();
+      const toMe = tmp2.copy(player.up).sub(build.d).projectOnPlane(build.d).normalize(); // 앞면이 나를 보게
+      build.r = yawOf(build.d, toMe) + build.yaw;
+      ghost.position.copy(build.d).multiplyScalar(terrain.radiusAt(build.d));
+      frameQuat(build.d, build.r, ghost.quaternion);
+      ghost.scale.setScalar(1);
+      if (build.wait <= 0) {
+        build.wait = 0.12;
+        build.check = world.canPlace(build.k, build.d);
+        ghost.material = build.check.ok ? ghostOk : ghostBad;
+        buildWhy.textContent = build.check.ok ? `${WORLD_KINDS[build.k].name}: 여기 좋아요` : build.check.why;
+        buildOk.disabled = !build.check.ok;
+      }
+    }
+    function confirmBuild() {
+      if (!build) return;
+      if (build.remove) { if (build.target) { world.act({ o: 'remove', id: build.target.it.id }); audio.fx('reel', 0.5); toast('치웠어요'); } endBuild(); return; }
+      if (!build.check.ok) return;
+      const d = build.d;
+      if (world.act({ o: 'place', k: build.k, d: [r4(d.x), r4(d.y), r4(d.z)], r: Math.round(build.r * 1000) / 1000, c: build.c })) toast(`${obj(WORLD_KINDS[build.k].name, ['을', '를'])} 지었어요`);
+      endBuild();
+    }
+    buildBtn.addEventListener('click', openBuild);
+    $('build-close').addEventListener('click', () => { buildMenu.hidden = true; });
+    for (const b of buildMenu.querySelectorAll('[data-k]')) { b.dataset.note = b.querySelector('small').textContent; b.addEventListener('click', () => startBuild(b.dataset.k)); }
+    $('build-remove').addEventListener('click', startRemove);
+    buildOk.addEventListener('click', confirmBuild);
+    buildRotate.addEventListener('click', () => { if (build) build.yaw += Math.PI / 2; });
+    buildColor.addEventListener('click', () => { if (build && !build.remove) { build.c = (build.c + 1) % 6; ghost.geometry = world.previewGeo(build.k, build.c); } });
+    $('build-cancel').addEventListener('click', endBuild);
+
+    // ── 할 수 있는 일 버튼 (주민 대화가 먼저) ──
+    let ctxNow = null, ctxWait = 0;
+    function pickContext() {
+      if (friends.open || rig.mode !== 'character' || build || !$('talk').hidden) return null;
+      if (fishing) return fishing.phase === 'bite' ? { label: '당기기!', go: reel, hot: true } : { label: fishing.phase === 'cast' ? '던지는 중…' : '기다리는 중… (그만하기)', go: () => stopFishing() };
+      if (seated || eating) return null;
+      const pp = player.anchor.position;
+      const slot = world.slotNear(pp, 1.6);
+      if (slot) {
+        const c = slot.crop, p = world.progressOf(c);
+        if (c.s < 0) return { label: '씨앗 심기', go: () => openSeeds(slot) };
+        if (p >= 1) return { label: `${CROPS[c.s].name} 거두기`, go: () => harvest(slot), hot: true };
+        if (!c.wt) return { label: `물 주기 (${Math.round(p * 100)}%)`, go: () => water(slot) };
+        return { label: `${CROPS[c.s].name} 자라는 중 ${Math.round(p * 100)}%`, go: null };
+      }
+      const fire = world.nearest('fire', pp, 3.0);
+      if (fire) return { label: '모닥불에 앉기', go: () => sitAt(fire) };
+      const w = waterAhead();
+      if (w) return { label: '낚시하기', go: () => startFishing(w) };
+      return null;
+    }
+    function doContext() { if (ctxNow && ctxNow.go) ctxNow.go(); }
+    ctxBtn.addEventListener('click', doContext);
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat || e.target instanceof HTMLInputElement) return;
+      if (e.code === 'KeyE' && $('talk').hidden && !friends.open) doContext();
+      else if (e.code === 'KeyB') openBuild();
+      else if (e.code === 'KeyR' && build && !build.remove) build.yaw += Math.PI / 2;
+      else if (e.code === 'KeyI') openBag();
+      else if (e.code === 'Escape') { if (build) endBuild(); closeSheets(); }
+    });
+
+    // ── 친구: 하는 일 · 선물 ──
+    function onBuddy(b, pr, isNew) {
+      const a = pr.ac && typeof pr.ac === 'object' && ACT_KINDS.includes(pr.ac.k) ? pr.ac : null;
+      const sig = a ? JSON.stringify(a) : '';
+      if (sig !== b.actSig) {
+        b.actSig = sig;
+        const same = b.act && a && b.act.k === a.k;
+        const it = a && typeof a.it === 'string' && ITEMS[a.it] ? a.it : 'gv';
+        b.act = a ? { k: a.k, t: same ? b.act.t : 0, cast: same ? b.act.cast : a.k === 'fish' && !isNew ? 0 : 1, bite: a.bite ? 1 : 0, seat: a.seat ? 1 : 0, s: clamp(a.s | 0, 0, SONGS.length - 1), it } : null;
+        if (!b.props) b.props = makeProps({ handArm: b.arms[1], torso: b.body });
+        const bob = a && a.k === 'fish' ? vec3(a.b) : null;
+        showProps(b.props, b.act, bob ? new THREE.Vector3(...bob).normalize() : null);
+        const was = music.has(b.key) ? b.musicKind : null, now = a && (a.k === 'guitar' || a.k === 'sing') ? a.k + b.act.s : null;
+        if (was !== now) { music.stop(b.key); b.musicKind = now; if (now) music.start(b.key, a.k, b.act.s, () => b.anchor.position); }
+        if (a && a.k === 'eat' && !isNew && a.i !== b.eatSeen) { b.eatSeen = a.i; if (b.anchor.position.distanceTo(player.anchor.position) < 12) audio.fx('chomp', 0.4); }
+      }
+      const list = Array.isArray(pr.gf) ? pr.gf.slice(-5) : [];
+      const mine = together.myKey();
+      let top = b.seenGift == null ? -1 : b.seenGift;
+      for (const g of list) {
+        if (!g || !Number.isFinite(g.i) || g.i <= (b.seenGift == null ? -1 : b.seenGift)) continue;
+        top = Math.max(top, g.i);
+        if (isNew || g.to !== mine || !ITEMS[g.it]) continue; // 들어올 때 이미 있던 건 지난 일
+        addItem(g.it);
+        toast(`${b.name}님이 ${obj(ITEMS[g.it].name, ['을', '를'])} 줬어요!`);
+        audio.fx('pop', 0.6);
+        emotes.fxFor('heart', player.anchor.position, player.up, player.height, 0);
+      }
+      b.seenGift = top;
+    }
+    function dropBuddy(b) {
+      music.stop(b.key);
+      if (b.props) { scene.remove(b.props.bobber, b.props.line); b.props.line.geometry.dispose(); b.props = null; }
+    }
+
+    return {
+      bag, ITEMS, SONGS, music, onBuddy, dropBuddy, toast,
+      get presAct() {
+        if (!act) return null;
+        if (act.k === 'fish') { const d = fishing ? fishing.bob : player.up; return { k: 'fish', b: [r4(d.x), r4(d.y), r4(d.z)], bite: act.bite ? 1 : 0 }; }
+        if (act.k === 'guitar' || act.k === 'sing') return { k: act.k, s: act.s, seat: seated ? 1 : 0 };
+        if (act.k === 'eat') return { k: 'eat', i: act.i, it: act.it, seat: act.seat };
+        return { k: act.k };
+      },
+      get presGifts() { return gifts.length ? gifts : null; },
+      get state() { return { act: act ? act.k : null, fishing: fishing ? fishing.phase : null, seated: !!seated, build: build ? build.k || 'remove' : null, boost: Math.round(boostLeft), ctx: ctxNow ? ctxNow.label : null }; },
+      debug: { startFishing: (d) => startFishing(d), reel, sitAt, stand, playGuitar, sing, eat, grill, give, startBuild, confirmBuild, startRemove, endBuild, waterAhead, get build() { return build; }, get fishing() { return fishing; } },
+      update(dt, time) {
+        // 할 수 있는 일
+        ctxWait -= dt;
+        if (ctxWait <= 0 || (fishing && fishing.phase === 'bite')) {
+          ctxWait = 0.12;
+          ctxNow = pickContext();
+          ctxBtn.hidden = !ctxNow;
+          if (ctxNow) { ctxBtn.textContent = ctxNow.label; ctxBtn.disabled = !ctxNow.go; ctxBtn.classList.toggle('hot', !!ctxNow.hot); }
+        }
+        if (rig.mode !== 'character') { if (build) endBuild(); closeSheets(); } // 행성 보기로 가면 짓기 · 판을 정리
+        campBar.hidden = !seated || rig.mode !== 'character';
+        if (fishing) stepFishing(dt);
+        if (build) stepBuild(dt);
+        if (eating) { eating.t += dt; if (Math.random() < dt * 5) audio.fx('chomp', 0.35); if (eating.t > 1.4) { setAct(eating.back); eating = null; showProps(myProps, act, fishing ? fishing.bob : null); } }
+        if (seated && player.moving > 0.2) stand();
+        if (act && act.k === 'guitar') act.strum = music.strum('me');
+        if (act && act.k === 'sing' && Math.random() < dt * 1.2) emotes.fxFor('dance', player.anchor.position, player.up, player.height, 0);
+        placeBobber(myProps, act && act.bite, time);
+        // 든든함: 더 빨리 · 더 높이
+        if (boostLeft > 0) { boostLeft = Math.max(0, boostLeft - dt); if (!boostLeft) toast('든든함이 다 사라졌어요'); }
+        boost.run = boostLeft > 0 ? 1.3 : 1;
+        boost.jump = boostLeft > 0 ? 1.15 : 1;
+        // 친구 소품
+        if (together) for (const b of together.buddies.values()) if (b.props) { if (b.act && b.act.k === 'guitar') b.act.strum = music.strum(b.key); placeBobber(b.props, b.act && b.act.bite, time); if (b.act && b.act.k === 'sing' && Math.random() < dt * 1.2) emotes.fxFor('dance', b.anchor.position, b.up, b.height, 0); }
+        music.update();
+        // 화면
+        const total = ORDER.reduce((n, k) => n + bag[k], 0);
+        bagCount.hidden = !total;
+        bagCount.textContent = String(total);
+        if (!bagPanel.hidden) { bagDirty = bagDirty || Math.random() < dt * 2; renderBag(); }
+        if (toastT > 0) { toastT -= dt; if (toastT <= 0) toastEl.classList.remove('show'); }
+      },
     };
   }
 
@@ -5201,13 +6659,19 @@ void main() {
       journal = createJournal(); // 친구 모듈(레이스)까지 만든 다음
       onUpdate((dt) => journal.update(dt));
       createLobby();
+      animals = createAnimals();
+      onUpdate((dt, t) => animals.update(dt, t));
+      world = createWorld();
+      onUpdate((dt, t) => world.update(dt, t));
+      life = createLife();
+      onUpdate((dt, t) => life.update(dt, t));
       onUpdate((dt, t) => { windTime.value = t; });
 
       window.addEventListener('resize', onResize);
       onResize();
       tick();
       renderer.setAnimationLoop(tick);
-      window.__season = { scene, camera, renderer, CONFIG, SEASONS, terrain, props, character, player, stick, planetView, followView, rig, fx, gems, audio, friends, together, emotes, journal, net, advance, adapt, get pixelRatio() { return pixelRatio; } };
+      window.__season = { scene, camera, renderer, CONFIG, SEASONS, terrain, props, character, player, stick, planetView, followView, rig, fx, gems, audio, friends, together, emotes, journal, net, animals, world, life, advance, adapt, get pixelRatio() { return pixelRatio; } };
       requestAnimationFrame(() => loadingEl.classList.add('hidden'));
       setTimeout(() => hud.intro(2.6), REDUCED_MOTION ? 0 : 1300); // 행성을 잠깐 보여 준 뒤 캐릭터 곁으로
     } catch (err) {
