@@ -66,6 +66,30 @@
   #stage { position: fixed; inset: 0; }
   #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
 
+  .rainbow-word {
+    position: fixed;
+    top: clamp(105px, 15vh, 180px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 7vw, 108px);
+    letter-spacing: 0.16em;
+    color: transparent;
+    background: linear-gradient(90deg, var(--spring), var(--summer), var(--autumn), var(--winter), var(--spring));
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    opacity: 0.3;
+    filter: drop-shadow(0 0 12px rgba(170, 210, 255, 0.55));
+    animation: rainbow-word-shimmer 9s linear infinite;
+  }
+  @keyframes rainbow-word-shimmer {
+    to { background-position: 220% 0; }
+  }
+
   /* ── HUD ───────────────────────────────────── */
   .hud-top {
     position: fixed; top: 0; left: 0; right: 0;
@@ -481,6 +505,7 @@
 </head>
 <body>
 <div id="stage"></div>
+<div class="rainbow-word" aria-hidden="true">RAINBOW WORD</div>
 
 <div class="hud-top">
   <div class="chip title"><span class="emblem" aria-hidden="true"></span>사계절 행성<span class="step">16단계</span></div>
@@ -1006,7 +1031,7 @@ void main() {
   // ═══════════════════════════════════════════════
   // 2. CORE — 렌더러 · 씬 · 카메라 · 업데이트 등록
   // ═══════════════════════════════════════════════
-  let renderer, scene, camera, clock, sunDir, space, stars, sunGroup, sunLight, rimLight, ambientLight, terrain, props, character, player, stick, keys, planetView, followView, rig, hud, fx, gems, audio, friends, together, emotes, journal, animals, world, life, outfits, quests, home;
+  let renderer, scene, camera, clock, sunDir, space, stars, sunGroup, sunLight, rimLight, ambientLight, terrain, props, character, player, stick, keys, planetView, followView, rig, hud, fx, gems, audio, friends, together, emotes, journal, animals, world, life, outfits, quests, home, portalTravel;
   let pixelRatio = 1;
   const maxPixelRatio = () => Math.min(window.devicePixelRatio || 1, CONFIG.maxPixelRatio);
   const updaters = [];
@@ -1615,7 +1640,8 @@ void main() {
 
   function createPlanet() {
     const t = createTerrain();
-    scene.add(t.mesh, t.water, createAtmosphere());
+    t.atmosphere = createAtmosphere();
+    scene.add(t.mesh, t.water, t.atmosphere);
     return t;
   }
 
@@ -1958,6 +1984,7 @@ void main() {
     // ── 캐릭터 충돌: 겹치면 옆으로 밀어내고, 그쪽으로 향하던 속도는 없앰 (벽을 따라 미끄러짐) ──
     const push = new THREE.Vector3(), axis = new THREE.Vector3(), rot = new THREE.Quaternion();
     function collide(up, feet, vel, roll) {
+      if (portalTravel && portalTravel.isMars) return;
       for (let pass = 0; pass < 2; pass++) {
         let pushed = false;
         near(hitGrid, HIT_CELL, up, (c) => {
@@ -1983,17 +2010,19 @@ void main() {
     const oc = new THREE.Vector3();
     function rayBlock(origin, rayDir, maxDist) {
       let best = maxDist;
-      for (let i = 0; i < blockers.length; i++) {
-        const bk = blockers[i];
-        oc.subVectors(origin, bk.center);
-        const cc = oc.lengthSq() - bk.r * bk.r;
-        if (cc < 0) continue; // 바라보는 점이 그 안 → 무시
-        if (oc.lengthSq() > (maxDist + bk.r) * (maxDist + bk.r)) continue;
-        const b = oc.dot(rayDir);
-        const disc = b * b - cc;
-        if (disc < 0) continue;
-        const t = -b - Math.sqrt(disc);
-        if (t > 0 && t < best) best = t;
+      if (!(portalTravel && portalTravel.isMars)) {
+        for (let i = 0; i < blockers.length; i++) {
+          const bk = blockers[i];
+          oc.subVectors(origin, bk.center);
+          const cc = oc.lengthSq() - bk.r * bk.r;
+          if (cc < 0) continue; // 바라보는 점이 그 안 → 무시
+          if (oc.lengthSq() > (maxDist + bk.r) * (maxDist + bk.r)) continue;
+          const b = oc.dot(rayDir);
+          const disc = b * b - cc;
+          if (disc < 0) continue;
+          const t = -b - Math.sqrt(disc);
+          if (t > 0 && t < best) best = t;
+        }
       }
       // 지형: 시선을 따라 몇 군데 찍어 보고 땅속이면 그 앞에서 멈춤
       const N = 8;
@@ -2432,7 +2461,8 @@ void main() {
 
       // 2) 속도: 땅에선 빠르게, 공중에선 천천히 목표를 따라감. 얕은 물속은 느리게
       const wading = terrain.radiusAt(up) < terrain.waterRadius - 0.1;
-      target.copy(move).multiplyScalar(strength * K.runSpeed * (wading ? K.waterSlow : 1) * boost.run);
+      const vehicleSpeed = portalTravel && portalTravel.driving ? 2.35 : 1;
+      target.copy(move).multiplyScalar(strength * K.runSpeed * vehicleSpeed * (wading ? K.waterSlow : 1) * boost.run);
       vel.lerp(target, 1 - Math.exp(-(grounded ? K.accel : K.airAccel) * dt)).projectOnPlane(up);
 
       // 3) 구면 위로 한 걸음: 위 벡터를 (위 × 속도) 축으로 굴림
@@ -2466,11 +2496,11 @@ void main() {
         grounded = false;
         coyote = 0;
         jumpBuffer = 0;
-        vy = K.jumpSpeed * boost.jump;
+        vy = K.jumpSpeed * boost.jump * (portalTravel && portalTravel.isMars ? 1.08 : 1);
         if (on.jump) on.jump();
       }
       if (!grounded) {
-        vy -= K.gravity * dt;
+        vy -= K.gravity * (portalTravel && portalTravel.isMars ? 0.55 : 1) * dt;
         radius += vy * dt;
         const floor = terrain.radiusAt(up);
         if (radius <= floor) {
@@ -2516,7 +2546,7 @@ void main() {
       get height() { return height; },
       get grounded() { return grounded; },
       setEnabled(on) { enabled = on; stick.setEnabled(on); if (!on) jumpBuffer = 0; },
-      requestJump() { if ((enabled && !locked) || override) jumpBuffer = K.jumpBuffer; },
+      requestJump() { if (!(portalTravel && portalTravel.driving) && ((enabled && !locked) || override)) jumpBuffer = K.jumpBuffer; },
       setLocked(v) { locked = v; if (v) jumpBuffer = 0; },
       get locked() { return locked; },
       face(dir) { faceTarget.copy(dir).projectOnPlane(up).normalize(); facing = true; },
@@ -3099,6 +3129,7 @@ void main() {
     }
 
     onUpdate((dt, time) => {
+      if (portalTravel && portalTravel.isMars) return;
       // 1) 계절 비율: 넓게 섞고 천천히 따라가서 경계를 지날 때 스르륵 바뀜
       terrain.weightsAt(player.up, weights, 9);
       for (let i = 0; i < 4; i++) smooth[i] = damp(smooth[i], weights[i], 2.5, dt);
@@ -3159,7 +3190,7 @@ void main() {
       if (dwell >= 0.7) announce(now);
     });
     return {
-      particles, on, weights: smooth, weather, weatherNames: EFFECTS.map((e) => e.name),
+      particles, clouds, on, weights: smooth, weather, weatherNames: EFFECTS.map((e) => e.name),
       get weatherState() { return weatherState; },
       setWeather(season, v) { weatherState[season].force = { on: v, left: 60 }; }, // 시험용: 이 기기만 60초 동안
       setClock(fn) { wClock = fn; lastT = null; }, // 방에 들어가면 서버 시각으로
@@ -3385,7 +3416,7 @@ void main() {
       }
     }
     return {
-      list, on, update, collect, reset,
+      list, on, update, collect, reset, meshes: [gemMesh, beamMesh, sparks],
       sparkle(center, up, season) { burst(center, up, season); },
       get collected() { return tally().got; },
       perSeason() { const t = tally(); return { per: t.per, tot: t.tot }; },
@@ -4310,7 +4341,8 @@ void main() {
     function open() {
       drop();
       let sock;
-      try { sock = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`); } catch (e) { fail('offline'); return; }
+      const wsBase = location.pathname.endsWith('/') ? location.pathname : location.pathname.replace(/[^/]*$/, '');
+      try { sock = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}${wsBase}ws`); } catch (e) { fail('offline'); return; }
       ws = sock;
       let opened = false;
       sock.onopen = () => { opened = true; retry = 0; if (want) send({ ...want, cid }); };
@@ -5432,7 +5464,8 @@ void main() {
       { key: 'penguin', name: '펭귄', season: 3, n: 8, move: 'walk', speed: 0.7, scare: 'slide', fleeR: 3.6, waddle: true },
       { key: 'fox', name: '북극여우', season: 3, n: 4, move: 'walk', speed: 1.3, scare: 'run', fleeR: 5, trot: true },
     ];
-    const meshOf = (geo, n) => { const m = new THREE.InstancedMesh(geo, material, Math.max(1, n)); m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); return m; };
+    const animalMeshes = [];
+    const meshOf = (geo, n) => { const m = new THREE.InstancedMesh(geo, material, Math.max(1, n)); m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); animalMeshes.push(m); return m; };
 
     // ── 자리 찾기 (시드로만 정해서 모든 기기에서 같음) ──
     const randDir = () => { let x, y, z, l; do { x = rng() * 2 - 1; y = rng() * 2 - 1; z = rng() * 2 - 1; l = x * x + y * y + z * z; } while (l > 1 || l < 0.01); return new THREE.Vector3(x, y, z).divideScalar(Math.sqrt(l)); };
@@ -5757,6 +5790,7 @@ void main() {
         if (audio && Math.random() < dt * 0.25) { const g = birds.find((b) => b.fl.style === 'geese'); if (g && g.pos.distanceTo(me) < 22) audio.fx('honk', 0.35); } // 기러기 소리
       },
     };
+    api.meshes = animalMeshes;
     return api;
   }
   // ═══════════════════════════════════════════════
@@ -6970,6 +7004,7 @@ void main() {
     ghost.renderOrder = 3;
     scene.add(ghost);
     function openBuild() {
+      if (portalTravel && portalTravel.isMars) { toast('화성 황무지에서는 지을 수 없어요'); return; }
       if (seated) stand();
       stopFishing(true);
       closeSheets(buildMenu);
@@ -7155,6 +7190,9 @@ void main() {
       if (fishing) return fishing.phase === 'bite' ? { label: '당기기!', go: reel, hot: true } : { label: fishing.phase === 'cast' ? '던지는 중…' : '기다리는 중… (그만하기)', go: () => stopFishing() };
       if (seated || eating || working || home.house) return null;
       const pp = player.anchor.position;
+      const gate = portalTravel && portalTravel.context();
+      if (gate) return gate;
+      if (portalTravel && portalTravel.isMars) return null;
       const house = houseNear(pp);
       if (house) return { label: `${world.ownerName(house)} 집에 들어가기`, go: () => enterHouse(house) };
       const slot = world.slotNear(pp, 1.6);
@@ -7372,6 +7410,268 @@ void main() {
   }
 
   // ═══════════════════════════════════════════════
+  // 17-2. PORTAL — MOVE GO 치트로 여는 화성형 황무지
+  // ═══════════════════════════════════════════════
+  function createPortalTravel() {
+    const R = CONFIG.planet.radius;
+    const earthBackground = scene.background;
+    const marsBackground = new THREE.Color(0x260c09);
+    const originUp = player.up.clone();
+    const marsUp = new THREE.Vector3(-0.36, 0.78, 0.51).normalize();
+    const marsForward = new THREE.Vector3(0, 1, 0).cross(marsUp).normalize();
+    const marsYaw = yawOf(marsUp, marsForward);
+    let originYaw = yawOf(originUp, player.heading), opened = false, mars = false, cool = 0, busy = false;
+
+    // 같은 지형을 화성의 붉은 암석 재질로 다시 그려 완전히 다른 행성처럼 보이게 한다.
+    const marsTerrain = new THREE.Mesh(terrain.mesh.geometry, new THREE.MeshStandardMaterial({
+      color: 0xa6482b, emissive: 0x250805, emissiveIntensity: 0.16,
+      roughness: 1, metalness: 0.02, flatShading: true,
+    }));
+    marsTerrain.name = 'mars-barren-terrain';
+    marsTerrain.visible = false;
+    scene.add(marsTerrain);
+
+    // 황량함을 살리는 낮은 바위와 크레이터. 나무·풀·꽃은 이 행성에서 모두 숨긴다.
+    const decor = new THREE.Group();
+    decor.name = 'mars-barren-decor';
+    decor.visible = false;
+    const rng = makeRng(CONFIG.seed + 9911), Y = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
+    const q = new THREE.Quaternion(), m = new THREE.Matrix4(), p = new THREE.Vector3(), s = new THREE.Vector3(), d = new THREE.Vector3();
+    const rockMat = new THREE.MeshStandardMaterial({ color: 0x6f2d20, roughness: 1, flatShading: true });
+    const rockCount = 90;
+    const rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.55, 0), rockMat, rockCount);
+    for (let i = 0; i < rockCount; i++) {
+      const u = rng() * 2 - 1, a = rng() * Math.PI * 2, rr = Math.sqrt(1 - u * u);
+      d.set(rr * Math.cos(a), u, rr * Math.sin(a));
+      q.setFromUnitVectors(Y, d).multiply(new THREE.Quaternion().setFromAxisAngle(Y, rng() * Math.PI * 2));
+      const z = 0.25 + rng() * 0.7;
+      rocks.setMatrixAt(i, m.compose(p.copy(d).multiplyScalar(terrain.radiusAt(d) + z * 0.12), q, s.set(0.5 + rng() * 1.6, z, 0.5 + rng() * 1.4)));
+    }
+    rocks.instanceMatrix.needsUpdate = true;
+    rocks.computeBoundingSphere();
+    decor.add(rocks);
+    const craterMat = new THREE.MeshStandardMaterial({ color: 0x4a1b16, roughness: 1, flatShading: true });
+    const craterCount = 22;
+    const craters = new THREE.InstancedMesh(new THREE.TorusGeometry(1, 0.1, 6, 24), craterMat, craterCount);
+    for (let i = 0; i < craterCount; i++) {
+      const u = rng() * 2 - 1, a = rng() * Math.PI * 2, rr = Math.sqrt(1 - u * u), size = 0.7 + rng() * 1.8;
+      d.set(rr * Math.cos(a), u, rr * Math.sin(a));
+      q.setFromUnitVectors(Z, d);
+      craters.setMatrixAt(i, m.compose(p.copy(d).multiplyScalar(terrain.radiusAt(d) + 0.04), q, s.set(size, size, size)));
+    }
+    craters.instanceMatrix.needsUpdate = true;
+    craters.computeBoundingSphere();
+    decor.add(craters);
+
+    // 화성 탐사용 자동차(로버)와 착륙 우주선 모형.
+    const modelMat = (color, emissive = 0x000000) => new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: emissive ? 1.4 : 0, roughness: 0.72, metalness: 0.28, flatShading: true });
+    const addPart = (parent, geometry, material, position, rotation = [0, 0, 0], scale = [1, 1, 1]) => {
+      const part = new THREE.Mesh(geometry, material);
+      part.position.set(...position);
+      part.rotation.set(...rotation);
+      part.scale.set(...scale);
+      parent.add(part);
+      return part;
+    };
+    const placeModel = (model, dir, yaw) => {
+      model.position.copy(dir).multiplyScalar(terrain.radiusAt(dir) + 0.03);
+      frameQuat(dir, yaw, model.quaternion);
+      decor.add(model);
+    };
+    const offsetFromMars = (tangent, meters) => marsUp.clone().applyAxisAngle(new THREE.Vector3().crossVectors(marsUp, tangent).normalize(), meters / R).normalize();
+    const marsFrame = tangentFrame(marsUp);
+
+    const rover = new THREE.Group();
+    rover.name = 'mars-rover';
+    const roverWhite = modelMat(0xe8dfce), roverRed = modelMat(0xb8492c), roverDark = modelMat(0x24242a), roverGlass = modelMat(0x4d9db0, 0x153d48);
+    addPart(rover, new THREE.BoxGeometry(1.8, 0.35, 2.5), roverWhite, [0, 0.58, 0]);
+    addPart(rover, new THREE.BoxGeometry(1.35, 0.45, 1.25), roverRed, [0, 1.0, -0.15]);
+    addPart(rover, new THREE.BoxGeometry(1.05, 0.5, 0.78), roverGlass, [0, 1.42, 0.18], [-0.12, 0, 0]);
+    addPart(rover, new THREE.CylinderGeometry(0.045, 0.045, 1.0, 8), roverDark, [0, 2.0, -0.25]);
+    addPart(rover, new THREE.SphereGeometry(0.13, 10, 8), roverRed, [0, 2.55, -0.25]);
+    for (const x of [-1.02, 1.02]) for (const z of [-0.82, 0, 0.82]) addPart(rover, new THREE.CylinderGeometry(0.34, 0.34, 0.28, 12), roverDark, [x, 0.42, z], [0, 0, Math.PI / 2]);
+    for (const x of [-0.52, 0.52]) addPart(rover, new THREE.SphereGeometry(0.1, 10, 8), modelMat(0xf7e7a1, 0xffd45a), [x, 0.72, 1.28]);
+    // 도착 지점 바로 뒤쪽에 두어 화성에 오자마자 찾아서 탈 수 있다.
+    const roverDir = offsetFromMars(marsForward, -6.4);
+    placeModel(rover, roverDir, 0.55);
+    const roverHeading = new THREE.Vector3(0, 0, 1).applyQuaternion(rover.quaternion).projectOnPlane(roverDir).normalize();
+    const roverBasis = new THREE.Matrix4(), roverSide = new THREE.Vector3(), dismountDir = new THREE.Vector3();
+    let driving = false;
+
+    function enterRover() {
+      if (!mars || driving || rover.position.distanceTo(player.anchor.position) > 3.8) return;
+      driving = true;
+      player.teleport(roverDir, roverHeading);
+      player.anchor.visible = false;
+      showBanner('화성 탐사차 탑승', 'WASD 또는 방향키로 운전하고 E를 누르면 내려요', 'autumn');
+      if (audio) audio.fx('pop', 0.65);
+    }
+    function exitRover() {
+      if (!driving) return;
+      driving = false;
+      roverSide.crossVectors(player.up, player.heading).normalize();
+      dismountDir.copy(player.up).applyAxisAngle(new THREE.Vector3().crossVectors(player.up, roverSide).normalize(), 2.0 / R).normalize();
+      player.anchor.visible = true;
+      player.teleport(dismountDir, player.heading.clone().projectOnPlane(dismountDir).normalize());
+      showBanner('탐사차에서 내렸어요', '가까이에서 E를 누르면 다시 탈 수 있어요', 'autumn');
+    }
+
+    const ship = new THREE.Group();
+    ship.name = 'mars-lander';
+    const shipWhite = modelMat(0xe5e7eb), shipRed = modelMat(0xc44b35), shipDark = modelMat(0x30343d), shipGlass = modelMat(0x4ba3c4, 0x143b50);
+    addPart(ship, new THREE.CylinderGeometry(0.7, 0.92, 3.2, 14), shipWhite, [0, 2.05, 0]);
+    addPart(ship, new THREE.ConeGeometry(0.72, 1.45, 14), shipRed, [0, 4.35, 0]);
+    addPart(ship, new THREE.SphereGeometry(0.38, 12, 8), shipGlass, [0, 2.8, 0.68], [0, 0, 0], [1.25, 0.8, 0.35]);
+    addPart(ship, new THREE.CylinderGeometry(0.44, 0.62, 0.75, 12), shipDark, [0, 0.45, 0]);
+    for (const a of [0, Math.PI * 2 / 3, Math.PI * 4 / 3]) {
+      const x = Math.sin(a), z = Math.cos(a);
+      addPart(ship, new THREE.BoxGeometry(0.12, 1.35, 0.12), shipDark, [x * 0.92, 0.65, z * 0.92], [z * 0.35, 0, -x * 0.35]);
+      addPart(ship, new THREE.BoxGeometry(0.55, 0.12, 0.55), shipRed, [x * 1.15, 0.08, z * 1.15]);
+    }
+    const shipDir = offsetFromMars(marsFrame.n, 11.5);
+    placeModel(ship, shipDir, -0.8);
+    scene.add(decor);
+
+    // 서 있는 자리에서 열리는 양면 포털.
+    const gate = new THREE.Group();
+    gate.name = 'move-go-portal';
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x68e8ff, emissive: 0x28bfff, emissiveIntensity: 2.4, roughness: 0.2, metalness: 0.35 });
+    const veilMat = new THREE.MeshBasicMaterial({ color: 0x845cff, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.16, 10, 56), ringMat);
+    const veil = new THREE.Mesh(new THREE.CircleGeometry(1.18, 56), veilMat);
+    ring.position.y = veil.position.y = 1.42;
+    gate.add(veil, ring);
+    const light = new THREE.PointLight(0x5bdcff, 7, 9, 2);
+    light.position.y = 1.5;
+    gate.add(light);
+    gate.visible = false;
+    scene.add(gate);
+
+    const placeGate = () => {
+      const up = mars ? marsUp : originUp;
+      gate.position.copy(up).multiplyScalar(terrain.radiusAt(up) + 0.04);
+      frameQuat(up, mars ? marsYaw : originYaw, gate.quaternion);
+    };
+    function setVisible(on) {
+      props.meshes.forEach((x) => { x.visible = on; });
+      if (fx && fx.clouds) fx.clouds.mesh.visible = on;
+      if (fx && fx.particles) fx.particles.kinds.forEach((x) => { x.points.visible = on; });
+      if (gems && gems.meshes) gems.meshes.forEach((x) => { x.visible = on; });
+      if (animals && animals.meshes) animals.meshes.forEach((x) => { x.visible = on; });
+      if (friends) for (const n of friends.npcs) { n.anchor.visible = on; if (!on) n.label.classList.remove('show'); }
+      if (together) for (const b of together.buddies.values()) { b.anchor.visible = on; if (b.tag) b.tag.hidden = !on; }
+      if (world) for (const e of world.live.values()) e.group.visible = on;
+    }
+    function applyMode() {
+      terrain.mesh.visible = !mars;
+      terrain.water.visible = !mars;
+      terrain.atmosphere.visible = !mars;
+      marsTerrain.visible = mars;
+      decor.visible = mars;
+      scene.background = mars ? marsBackground : earthBackground;
+      setVisible(!mars);
+      placeGate();
+      const season = $('season'), label = $('season-name'), weather = $('weather');
+      if (mars) {
+        season.dataset.season = 'autumn';
+        label.textContent = '화성 황무지';
+        weather.hidden = true;
+      } else {
+        const i = terrain.seasonAt(player.up);
+        season.dataset.season = SEASONS[i].key;
+        label.textContent = `${SEASONS[i].name} 구역`;
+      }
+    }
+    function open() {
+      if (busy) return;
+      if (!mars) {
+        originUp.copy(player.up);
+        originYaw = yawOf(originUp, player.heading);
+      }
+      opened = true;
+      gate.visible = true;
+      placeGate();
+      showBanner('MOVE GO 포털이 열렸어요', mars ? '포털로 지구에 돌아갈 수 있어요' : '포털 가까이에서 E를 눌러 화성으로 가세요', 'winter');
+      if (audio) audio.fx('pop', 0.8);
+    }
+    function travel() {
+      if (!opened || busy || cool > 0) return;
+      if (driving) exitRover();
+      busy = true;
+      player.setLocked(true);
+      const fade = $('fade');
+      fade.classList.add('on');
+      setTimeout(() => {
+        mars = !mars;
+        const dest = mars ? marsUp : originUp;
+        const gateQ = frameQuat(dest, mars ? marsYaw : originYaw, new THREE.Quaternion());
+        const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(gateQ).projectOnPlane(dest).normalize();
+        const arrive = dest.clone().applyAxisAngle(new THREE.Vector3().crossVectors(dest, facing).normalize(), -3.6 / R).normalize();
+        player.teleport(arrive, facing.projectOnPlane(arrive).normalize());
+        applyMode();
+        cool = 1.8;
+        showBanner(mars ? '화성 황무지' : '사계절 행성', mars ? '낮은 중력! 더 높이 뛰며 탐사차와 우주선을 찾아보세요' : '원래 행성으로 돌아왔어요', mars ? 'autumn' : SEASONS[terrain.seasonAt(dest)].key);
+        setTimeout(() => { fade.classList.remove('on'); player.setLocked(false); busy = false; }, 260);
+      }, 260);
+    }
+
+    const TARGET = 'MOVE GO';
+    let typed = '', typedAt = 0;
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat || e.ctrlKey || e.altKey || e.metaKey || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target.isContentEditable) return;
+      const ch = e.key.length === 1 ? e.key.toUpperCase() : '';
+      if (!/^[A-Z ]$/.test(ch)) return;
+      const now = performance.now();
+      if (now - typedAt > 4000) typed = '';
+      typedAt = now;
+      typed = (typed + ch).slice(-TARGET.length);
+      if (typed === TARGET) { typed = ''; open(); }
+    });
+
+    return {
+      open, travel,
+      context() {
+        if (driving) return { label: '탐사차에서 내리기', go: exitRover, hot: true };
+        if (mars && rover.position.distanceTo(player.anchor.position) <= 3.8) return { label: '탐사차 타기', go: enterRover, hot: true };
+        if (!opened || busy || cool > 0 || gate.position.distanceTo(player.anchor.position) > 3.2) return null;
+        return { label: mars ? '지구로 돌아가기' : '화성으로 이동', go: travel, hot: true };
+      },
+      update(dt, time) {
+        cool = Math.max(0, cool - dt);
+        if (opened) {
+          ring.rotation.z = time * 0.7;
+          veil.rotation.z = -time * 0.35;
+          const pulse = 1 + 0.05 * Math.sin(time * 3.2);
+          veil.scale.setScalar(pulse);
+        }
+        if (!mars) return;
+        if (driving) {
+          roverDir.copy(player.up);
+          roverHeading.copy(player.heading).projectOnPlane(roverDir).normalize();
+          rover.position.copy(roverDir).multiplyScalar(terrain.radiusAt(roverDir) + 0.03);
+          roverSide.crossVectors(roverDir, roverHeading).normalize();
+          rover.quaternion.setFromRotationMatrix(roverBasis.makeBasis(roverSide, roverDir, roverHeading));
+        }
+        // 계절/날씨 업데이트 뒤에 실행되어 화성의 색과 안개를 유지한다.
+        scene.background = marsBackground;
+        scene.fog.color.setHex(0x8b3b27);
+        scene.fog.density = 0.012;
+        sunLight.color.setHex(0xffb07a);
+        sunLight.intensity = 2.15;
+        ambientLight.color.setHex(0x8d4a38);
+        ambientLight.intensity = 1.05;
+        $('season-name').textContent = '화성 황무지';
+        $('weather').hidden = true;
+        setVisible(false); // 방에 새로 들어온 친구나 새 건물도 황무지에서는 감춘다.
+        gate.visible = opened;
+      },
+      get isMars() { return mars; },
+      get driving() { return driving; },
+      get isOpen() { return opened; },
+    };
+  }
+
+  // ═══════════════════════════════════════════════
   // 18. LOOP & BOOT
   // ═══════════════════════════════════════════════
   let fpsTime = 0;
@@ -7494,6 +7794,8 @@ void main() {
       onUpdate((dt) => home.update(dt));
       life = createLife();
       onUpdate((dt, t) => life.update(dt, t));
+      portalTravel = createPortalTravel();
+      onUpdate((dt, t) => portalTravel.update(dt, t));
       animals.setClock(() => world.now() / 1000); // 방에선 서버 시각 → 모두 같은 동물
       fx.setClock(() => world.now() / 1000); // 날씨도 같은 시각으로 → 모두 같은 날씨
       animals.onSend = (a, f) => { if (world.mode === 'room') net.scare(a, f); else animals.scare(a, f, Date.now()); };
@@ -7503,7 +7805,7 @@ void main() {
       onResize();
       tick();
       renderer.setAnimationLoop(tick);
-      window.__season = { scene, camera, renderer, CONFIG, SEASONS, terrain, props, character, player, stick, planetView, followView, rig, fx, gems, audio, friends, together, emotes, journal, net, animals, world, life, outfits, quests, home, advance, adapt, get pixelRatio() { return pixelRatio; } };
+      window.__season = { scene, camera, renderer, CONFIG, SEASONS, terrain, props, character, player, stick, planetView, followView, rig, fx, gems, audio, friends, together, emotes, journal, net, animals, world, life, outfits, quests, home, portalTravel, advance, adapt, get pixelRatio() { return pixelRatio; } };
       requestAnimationFrame(() => loadingEl.classList.add('hidden'));
       setTimeout(() => hud.intro(2.6), REDUCED_MOTION ? 0 : 1300); // 행성을 잠깐 보여 준 뒤 캐릭터 곁으로
     } catch (err) {
